@@ -39,7 +39,8 @@ export function registerSessionHooks(app: FastifyInstance, ctx: AppContext) {
       }
     }
     const stateChanging = !['GET', 'HEAD', 'OPTIONS'].includes(req.method);
-    if (stateChanging && req.user && req.headers['x-csrf-token'] !== req.user.csrfToken) {
+    // Customer routes carry their own session and CSRF check (see routes/customer.ts).
+    if (stateChanging && req.user && !req.url.startsWith('/api/customer/') && req.headers['x-csrf-token'] !== req.user.csrfToken) {
       throw new HttpError(403, 'CSRF', 'Security token missing or expired; reload the page');
     }
   });

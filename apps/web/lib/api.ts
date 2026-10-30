@@ -27,7 +27,8 @@ export async function api<T>(path: string, opts: { method?: 'GET' | 'POST' | 'PA
     },
     body: hasBody ? JSON.stringify(opts.body ?? {}) : undefined,
   });
-  if (res.status === 401 && !path.startsWith('/api/auth/login') && typeof window !== 'undefined') {
+  // Customer pages handle their own sign-in, so a 401 there must not bounce to the staff login.
+  if (res.status === 401 && !path.startsWith('/api/auth/login') && !path.startsWith('/api/customer/') && typeof window !== 'undefined') {
     window.location.href = '/login';
   }
   const isJson = (res.headers.get('content-type') ?? '').includes('json');

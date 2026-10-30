@@ -3,10 +3,11 @@ import { writeAudit } from './audit';
 import type { Config } from './config';
 import type { Db } from './db';
 import { hashPassword } from './routes/auth';
+import { SELF_SERVICE_USERNAME } from './services/customers';
 
 /** Creates the first admin from BOOTSTRAP_ADMIN_* when the users table is empty. */
 export async function bootstrap(cfg: Config, db: Db, log: FastifyBaseLogger) {
-  const users = Number((await db.query<{ n: number }>('SELECT count(*)::int AS n FROM users')).rows[0]?.n ?? 0);
+  const users = Number((await db.query<{ n: number }>('SELECT count(*)::int AS n FROM users WHERE username <> $1', [SELF_SERVICE_USERNAME])).rows[0]?.n ?? 0);
   if (users === 0) {
     if (!cfg.BOOTSTRAP_ADMIN_USERNAME || !cfg.BOOTSTRAP_ADMIN_PASSWORD) {
       log.warn('No users exist. Set BOOTSTRAP_ADMIN_USERNAME and BOOTSTRAP_ADMIN_PASSWORD and restart to create the first admin.');

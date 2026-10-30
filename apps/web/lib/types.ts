@@ -54,6 +54,24 @@ export interface Vend {
   completedAt: string | null;
 }
 
+export interface Customer {
+  id: string;
+  meterNo: string;
+  name: string;
+  phone: string | null;
+  balance: string;
+  currency: string;
+  active: boolean;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+/** "01234567890" → "0123 4567 890", easier to read back to a customer. */
+export const groupMeter = (m: string) => m.replace(/(\d{4})(?=\d)/g, '$1 ');
+
+export const money = (n: number | string) =>
+  Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export const isSupervisor = (r: Role) => r === 'supervisor' || r === 'admin';
 export const canVend = (r: Role) => r !== 'auditor';
 

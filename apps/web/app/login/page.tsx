@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { FlowPreview } from '@/components/FlowPreview';
+import Link from 'next/link';
+import { CustomerDesk } from '@/components/CustomerDesk';
 import { Icon } from '@/components/Icon';
 import { api, ApiError, errorText } from '@/lib/api';
 
@@ -64,12 +65,12 @@ export default function LoginPage() {
           <span>Token desk</span>
         </div>
         <div className="login-pitch">
-          <FlowPreview />
-          <p className="flow-caption"><b>Meter, units, token.</b> Three steps, and the customer is back on power.</p>
+          <CustomerDesk />
+          <p className="flow-caption"><b>Registered customer?</b> Buy your token here with your meter number and PIN.</p>
         </div>
         <div className="login-foot">
           <span>Tronic Kenya · Nairobi</span>
-          <span>Agents only</span>
+          <span>Agents and registered customers</span>
         </div>
         {/* Rings that radiate out from the sun, like the one in the logo. */}
         <div className="radiate" aria-hidden="true"><i /><i /><i /></div>
@@ -128,7 +129,12 @@ export default function LoginPage() {
             <Icon name="shield" size={16} />
             <span>Every sale is logged against your name, so please don’t share your login. Forgot it? Ask your supervisor to reset it.</span>
           </p>
-          <div className="login-mobile-foot">Tronic Kenya · Nairobi · Agents only</div>
+          <Link href="/token" className="customer-link">
+            <Icon name="bolt" size={16} />
+            <span><b>Customer?</b> Buy your token with your meter number and PIN</span>
+            <Icon name="arrow" size={16} />
+          </Link>
+          <div className="login-mobile-foot">Tronic Kenya · Nairobi</div>
         </form>
       </section>
     </div>

@@ -20,7 +20,7 @@ export function decryptSecret(stored: string, keyB64: string): string {
 export const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 export const randomToken = (bytes = 32) => randomBytes(bytes).toString('base64url');
 
-const SENSITIVE_KEY = /pass(word)?|token|secret|cookie|csrf|authorization/i;
+const SENSITIVE_KEY = /pass(word)?|pin|token|secret|cookie|csrf|authorization/i;
 const ALLOWED_KEYS = new Set(['tokenLast4', 'tokenCount']);
 
 /** Removes credentials and tokens from objects before they are logged or audited. */

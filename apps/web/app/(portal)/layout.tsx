@@ -22,6 +22,7 @@ const NAV: { label: string; items: NavItem[] }[] = [
     items: [
       { href: '/vend', label: 'Generate token', icon: 'bolt', show: canVend },
       { href: '/history', label: 'Transactions', icon: 'history', show: () => true },
+      { href: '/customers', label: 'Customers', icon: 'wallet', show: () => true },
     ],
   },
   {

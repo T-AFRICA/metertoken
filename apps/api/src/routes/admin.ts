@@ -5,6 +5,7 @@ import { audit, verifyAuditChain, writeAudit } from '../audit';
 import type { AppContext } from '../context';
 import { isUniqueViolation } from '../db';
 import { HttpError, requireRole, requireUser } from '../http';
+import { SELF_SERVICE_USERNAME } from '../services/customers';
 import { hashPassword } from './auth';
 
 const uuid = z.string().uuid();
@@ -24,7 +25,7 @@ export function adminRoutes(app: FastifyInstance, ctx: AppContext) {
   // ---- Users -------------------------------------------------------------
   app.get('/api/admin/users', { preHandler: requireRole('admin') }, async () => {
     const rows = (
-      await ctx.db.query('SELECT id, username, display_name, role, active, created_at, last_login_at FROM users ORDER BY username')
+      await ctx.db.query('SELECT id, username, display_name, role, active, created_at, last_login_at FROM users WHERE username <> $1 ORDER BY username', [SELF_SERVICE_USERNAME])
     ).rows;
     return {
       items: rows.map((r) => ({
@@ -74,7 +75,7 @@ export function adminRoutes(app: FastifyInstance, ctx: AppContext) {
       throw new HttpError(400, 'SELF_LOCKOUT', 'You cannot deactivate yourself or remove your own admin role');
     }
     await ctx.db.tx(async (q) => {
-      const found = (await q.query('SELECT 1 FROM users WHERE id = $1', [id])).rows[0];
+      const found = (await q.query('SELECT 1 FROM users WHERE id = $1 AND username <> $2', [id, SELF_SERVICE_USERNAME])).rows[0];
       if (!found) throw new HttpError(404, 'NOT_FOUND', 'User not found');
       if (body.displayName) await q.query('UPDATE users SET display_name = $2 WHERE id = $1', [id, body.displayName]);
       if (body.role) await q.query('UPDATE users SET role = $2 WHERE id = $1', [id, body.role]);

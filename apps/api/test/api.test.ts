@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { MockStsAdapter } from '@tronic/core';
+import Decimal from 'decimal.js';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app';
@@ -199,5 +200,123 @@ describe('admin', () => {
     const all = (await db.query('SELECT payload FROM audit_events')).rows.map((r) => r.payload).join('\n');
     expect(all).not.toContain(ADMIN_PW);
     expect(all).not.toMatch(/MOCK \d{4} \d{4}/);
+  });
+});
+
+describe('customer self-service', () => {
+  interface CustomerSession {
+    cookie: string;
+    csrf: string;
+  }
+
+  async function register(meterNo: string, pin = '4321') {
+    const r = await call(supervisor, 'POST', '/api/customers', { meterNo, name: `Customer ${meterNo.slice(-4)}`, pin });
+    expect(r.statusCode, r.body).toBe(200);
+    return r.json().id as string;
+  }
+
+  const topUp = (id: string, amount: string, key = randomUUID()) =>
+    call(cashier, 'POST', `/api/customers/${id}/topups`, { amount }, { 'idempotency-key': key });
+
+  async function customerLogin(meterNo: string, pin = '4321'): Promise<CustomerSession> {
+    const res = await app.inject({ method: 'POST', url: '/api/customer/login', payload: { meterNo, pin } });
+    expect(res.statusCode, res.body).toBe(200);
+    return { cookie: String(res.headers['set-cookie']).split(';')[0]!, csrf: res.json().csrfToken };
+  }
+
+  const ccall = (s: CustomerSession, method: 'GET' | 'POST', url: string, payload?: object, headers: Record<string, string> = {}) =>
+    app.inject({ method, url, payload, headers: { cookie: s.cookie, 'x-csrf-token': s.csrf, ...headers } });
+
+  async function buy(s: CustomerSession, value: string) {
+    const q = await ccall(s, 'POST', '/api/customer/quotes', { mode: 'units', value });
+    expect(q.statusCode, q.body).toBe(200);
+    const r = await ccall(s, 'POST', '/api/customer/vends', { quoteId: q.json().quoteId }, { 'idempotency-key': randomUUID() });
+    return { quote: q.json(), res: r };
+  }
+
+  it('lets only supervisors register, and only real meters', async () => {
+    expect((await call(cashier, 'POST', '/api/customers', { meterNo: '55555555555', name: 'X', pin: '1234' })).statusCode).toBe(403);
+    expect((await call(supervisor, 'POST', '/api/customers', { meterNo: '00001234567', name: 'X', pin: '1234' })).statusCode).toBe(404);
+    expect((await call(supervisor, 'POST', '/api/customers', { meterNo: '55555555555', name: 'X', pin: '12' })).statusCode).toBe(400);
+  });
+
+  it('signs in with meter and PIN, and locks after repeated wrong PINs', async () => {
+    await register('55555551111');
+    for (let i = 0; i < 5; i++) {
+      const r = await app.inject({ method: 'POST', url: '/api/customer/login', payload: { meterNo: '55555551111', pin: '0000' } });
+      expect(r.statusCode).toBe(401);
+    }
+    const locked = await app.inject({ method: 'POST', url: '/api/customer/login', payload: { meterNo: '55555551111', pin: '4321' } });
+    expect(locked.statusCode).toBe(429);
+  });
+
+  it('buys a token from the balance and never goes below zero', async () => {
+    const id = await register('55555555555');
+    const s = await customerLogin('55555555555');
+
+    const broke = await buy(s, '1');
+    expect(broke.res.statusCode).toBe(402);
+    expect(broke.res.json().error).toBe('INSUFFICIENT_BALANCE');
+
+    const key = randomUUID();
+    expect((await topUp(id, '10000', key)).json().balance).toBe('10000.00');
+    // The same top-up request twice adds the money once.
+    expect((await topUp(id, '10000', key)).json().balance).toBe('10000.00');
+
+    const { quote, res } = await buy(s, '2');
+    expect(res.statusCode, res.body).toBe(200);
+    const body = res.json();
+    expect(body.vend.status).toBe('SUCCEEDED');
+    expect(body.vend.tokens[0]).toMatch(/^MOCK /);
+    expect(body.customer.balance).toBe(new Decimal('10000').minus(quote.amount).toFixed(2));
+
+    const list = (await ccall(s, 'GET', '/api/customer/vends')).json();
+    expect(list.items).toHaveLength(1);
+    expect(list.items[0].tokenLast4).toBeTruthy();
+    // Staff see the purchase under the self-service account.
+    const staff = (await call(supervisor, 'GET', `/api/vends/${body.vend.id}`)).json();
+    expect(staff.operator).toBe('Customer self-service');
+  });
+
+  it('refunds the balance when the vendor rejects or a supervisor fails the vend', async () => {
+    const rejectId = await register('55555559999');
+    await topUp(rejectId, '5000');
+    const rs = await customerLogin('55555559999');
+    const rejected = await buy(rs, '1');
+    expect(rejected.res.json().vend.status).toBe('FAILED');
+    expect(rejected.res.json().customer.balance).toBe('5000.00');
+
+    const unknownId = await register('55555558888');
+    await topUp(unknownId, '5000');
+    const us = await customerLogin('55555558888');
+    const unknown = await buy(us, '1');
+    const v = unknown.res.json();
+    expect(v.vend.status).toBe('UNKNOWN');
+    expect(v.customer.balance).toBe(new Decimal('5000').minus(unknown.quote.amount).toFixed(2));
+    await call(supervisor, 'POST', `/api/vends/${v.vend.id}/resolve`, { outcome: 'FAILED', note: 'Not in vendor history' });
+    expect((await ccall(us, 'GET', '/api/customer/me')).json().customer.balance).toBe('5000.00');
+    const ledger = (await call(supervisor, 'GET', `/api/customers/${unknownId}/ledger`)).json().items.map((l: { kind: string }) => l.kind);
+    expect(ledger).toEqual(['refund', 'purchase', 'topup']);
+  });
+
+  it('keeps customers to their own meter and needs their CSRF token', async () => {
+    const s = await customerLogin('55555555555');
+    const other = (await ccall(s, 'GET', '/api/customer/vends')).json().items[0].id;
+    const mine = await ccall(s, 'GET', `/api/customer/vends/${other}`);
+    expect(mine.statusCode).toBe(200);
+    const s2 = await customerLogin('55555559999');
+    expect((await ccall(s2, 'GET', `/api/customer/vends/${other}`)).statusCode).toBe(404);
+    const noCsrf = await app.inject({ method: 'POST', url: '/api/customer/quotes', payload: { mode: 'units', value: '1' }, headers: { cookie: s.cookie } });
+    expect(noCsrf.statusCode).toBe(403);
+    // Staff sessions cannot use customer routes.
+    expect((await call(cashier, 'POST', '/api/customer/quotes', { mode: 'units', value: '1' })).statusCode).toBe(401);
+  });
+
+  it('signs a customer out when staff reset the PIN', async () => {
+    const id = (await call(supervisor, 'GET', '/api/customers?q=55555555555')).json().items[0].id;
+    const s = await customerLogin('55555555555');
+    expect((await call(supervisor, 'PATCH', `/api/customers/${id}`, { pin: '987654' })).statusCode).toBe(200);
+    expect((await ccall(s, 'GET', '/api/customer/me')).statusCode).toBe(401);
+    await customerLogin('55555555555', '987654');
   });
 });

@@ -5,6 +5,8 @@ import type { AppContext } from './context';
 import { HttpError } from './http';
 import { adminRoutes } from './routes/admin';
 import { authRoutes, registerSessionHooks } from './routes/auth';
+import { customerRoutes } from './routes/customer';
+import { customerAdminRoutes } from './routes/customers';
 import { quoteRoutes } from './routes/quotes';
 import { vendRoutes } from './routes/vends';
 
@@ -43,5 +45,7 @@ export async function buildApp(ctx: AppContext, opts: FastifyServerOptions = {})
   quoteRoutes(app, ctx);
   vendRoutes(app, ctx);
   adminRoutes(app, ctx);
+  customerRoutes(app, ctx);
+  customerAdminRoutes(app, ctx);
   return app;
 }
