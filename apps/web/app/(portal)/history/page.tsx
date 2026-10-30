@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api, errorText } from '@/lib/api';
 import { formatDate, statusLabel, type VendStatus } from '@/lib/types';
+import { useSession } from '../session';
 
 interface Row {
   id: string;
@@ -21,8 +22,11 @@ interface Row {
 
 const STATUSES: VendStatus[] = ['SUCCEEDED', 'FAILED', 'UNKNOWN', 'MANUAL_REVIEW', 'PENDING', 'SUBMITTED'];
 
+const money = (n: string) => Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export default function HistoryPage() {
   const router = useRouter();
+  const me = useSession();
   const [rows, setRows] = useState<Row[]>([]);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
@@ -108,10 +112,11 @@ export default function HistoryPage() {
                 <td className="mono" data-label="Meter">{r.meterNo}</td>
                 <td className="nowrap" data-label="Operator">{r.operator}</td>
                 <td className="num" data-label="kWh">{r.units}</td>
-                <td className="num" data-label="Amount">{r.currency} {r.amount}</td>
+                <td className="num" data-label="Amount">{r.currency} {money(r.amount)}</td>
                 <td data-label="Status">
                   <span className={`badge ${r.status}`}>{statusLabel(r.status)}</span>{' '}
-                  {r.adapterMode === 'mock' && <span className="badge mock">MOCK</span>}
+                  {/* In test mode every row is a practice vend; flag them only once live. */}
+                  {r.adapterMode === 'mock' && me.adapterMode === 'live' && <span className="badge mock">Test</span>}
                 </td>
                 <td className="mono" data-label="Token">{r.tokenLast4 ? `•••• ${r.tokenLast4}` : '—'}</td>
               </tr>

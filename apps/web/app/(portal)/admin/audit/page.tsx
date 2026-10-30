@@ -30,14 +30,51 @@ const ACTION_TONE: Record<string, string> = {
   'auth.login_failed': 'FAILED',
 };
 
+const ACTION_LABEL: Record<string, string> = {
+  'vend.requested': 'Vend requested',
+  'vend.succeeded': 'Token issued',
+  'vend.failed': 'Vend failed',
+  'vend.unknown': 'Result unknown',
+  'vend.needs_review': 'Needs review',
+  'vend.escalated': 'Escalated',
+  'vend.resolved': 'Resolved',
+  'vend.token_viewed': 'Token viewed',
+  'receipt.printed': 'Receipt printed',
+  'receipt.reprinted': 'Receipt reprinted',
+  'meter.verify': 'Meter checked',
+  'auth.login': 'Signed in',
+  'auth.logout': 'Signed out',
+  'auth.login_failed': 'Sign-in failed',
+  'user.bootstrap_admin': 'First admin created',
+  'user.created': 'User added',
+  'user.updated': 'User changed',
+  'tariff.sample_seeded': 'Sample tariff added',
+  'tariff.created': 'Tariff added',
+  'tariff.version_drafted': 'Tariff drafted',
+  'tariff.version_approved': 'Tariff approved',
+  'report.exported': 'Report exported',
+  'live_mode.approved': 'Live mode approved',
+  'live_mode.revoked': 'Live mode revoked',
+};
+
+const actionLabel = (a: string) => ACTION_LABEL[a] ?? a.replace(/[._]/g, ' ').replace(/^./, (c) => c.toUpperCase());
+
+// camelCase keys read as words; long decimals from the database are trimmed.
+const keyLabel = (k: string) => k.replace(/([a-z])([A-Z0-9])/g, '$1 $2').toLowerCase();
+const valueText = (v: unknown) => {
+  if (typeof v === 'object') return JSON.stringify(v);
+  const s = String(v);
+  return /^\d+\.\d{3,}$/.test(s) ? Number(s).toFixed(2) : s;
+};
+
 function Detail({ detail }: { detail: Record<string, unknown> | null }) {
   if (!detail) return <span className="muted">—</span>;
   const entries = Object.entries(detail).filter(([, v]) => v !== null && v !== undefined && v !== '');
   return (
     <>
       {entries.map(([k, v]) => (
-        <span key={k} className="chip" title={`${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`}>
-          <b>{k}</b> {typeof v === 'object' ? JSON.stringify(v) : String(v)}
+        <span key={k} className="chip" title={`${k}: ${valueText(v)}`}>
+          <b>{keyLabel(k)}</b> {valueText(v)}
         </span>
       ))}
     </>
@@ -105,7 +142,7 @@ export default function AuditPage() {
                   <td className="nowrap muted">{formatDate(e.at)}</td>
                   <td className="nowrap">{e.actor}</td>
                   <td className="nowrap">
-                    <span className={`badge ${ACTION_TONE[e.action] ?? 'PENDING'}`}>{e.action}</span>
+                    <span className={`badge ${ACTION_TONE[e.action] ?? 'PENDING'}`}>{actionLabel(e.action)}</span>
                   </td>
                   <td className="nowrap mono muted">{e.entity ? `${e.entity} ${(e.entityId ?? '').slice(0, 11)}` : '—'}</td>
                   <td><Detail detail={e.detail} /></td>

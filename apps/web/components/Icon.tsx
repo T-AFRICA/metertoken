@@ -20,6 +20,7 @@ const PATHS = {
   receipt: 'M6 2h12v20l-3-2-3 2-3-2-3 2V2Zm3 6h6m-6 4h6m-6 4h4',
   zap: 'M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2Z',
   menu: 'M4 6h16M4 12h16M4 18h16',
+  back: 'M19 12H5m7-7-7 7 7 7',
 } as const;
 
 export type IconName = keyof typeof PATHS;

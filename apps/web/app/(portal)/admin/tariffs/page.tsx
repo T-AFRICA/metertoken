@@ -103,9 +103,13 @@ export default function TariffsPage() {
                 {t.versions.map((v) => (
                   <tr key={v.id}>
                     <td><span className={`badge ${v.status}`}>{statusLabel(v.status)}</span></td>
-                    <td className="num">{v.baseRate}</td>
+                    <td className="num">{Number(v.baseRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</td>
                     <td>
-                      {[...v.percentCharges.map((c) => `${c.name} ${c.percent}%`), ...v.fixedCharges.map((c) => `${c.name} ${c.amount}`)].join(', ') || '—'}
+                      {/* Names often already carry the rate ("VAT 18%"); don't repeat it. */}
+                      {[...v.percentCharges.map((c) => (c.name.includes('%') ? c.name : `${c.name} ${Number(c.percent)}%`)), ...v.fixedCharges.map((c) => `${c.name} ${c.amount}`)].map((t) => (
+                        <span key={t} className="chip">{t}</span>
+                      ))}
+                      {!v.percentCharges.length && !v.fixedCharges.length && '—'}
                       {v.note && <div className="hint">{v.note}</div>}
                     </td>
                     <td className="nowrap muted">{v.createdBy ?? 'system'} · {formatDate(v.createdAt)}</td>

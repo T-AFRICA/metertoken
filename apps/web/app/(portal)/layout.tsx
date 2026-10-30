@@ -79,8 +79,11 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   if (!me) return <main className="hint">Loading…</main>;
 
   const role = me.user.role;
-  const current = NAV.flatMap((g) => g.items.map((i) => ({ group: g.label, label: i.label, href: i.href }))).find((i) => path?.startsWith(i.href));
-  const crumbs = current ? [current.group, current.label] : path?.startsWith('/vends/') ? ['Vending', 'Transactions', 'Detail'] : [];
+  // A transaction's detail page (/vends/:id) belongs under Transactions, not "/vend".
+  const isActive = (href: string) =>
+    path === href || path?.startsWith(`${href}/`) || (href === '/history' && path?.startsWith('/vends/'));
+  const current = NAV.flatMap((g) => g.items.map((i) => ({ group: g.label, label: i.label, href: i.href }))).find((i) => isActive(i.href));
+  const crumbs = current ? [current.group, current.label, ...(path?.startsWith('/vends/') ? ['Detail'] : [])] : [];
   const initials = me.user.displayName
     .split(/\s+/)
     .map((w) => w[0])
@@ -123,7 +126,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               <div className="nav-group" key={group.label}>
                 <div className="nav-label">{group.label}</div>
                 {items.map((i) => (
-                  <Link key={i.href} href={i.href} className={`nav-item ${path?.startsWith(i.href) ? 'active' : ''}`}>
+                  <Link key={i.href} href={i.href} className={`nav-item ${isActive(i.href) ? 'active' : ''}`}>
                     <Icon name={i.icon} />
                     {i.label}
                   </Link>

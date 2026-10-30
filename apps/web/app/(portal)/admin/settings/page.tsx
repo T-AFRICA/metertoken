@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { api, errorText } from '@/lib/api';
 import { formatDate } from '@/lib/types';
 
@@ -41,41 +42,59 @@ export default function SettingsPage() {
       {error && <div className="alert error">{error}</div>}
       {live && (
         <div className="card">
-          <h2 style={{ marginTop: 0 }}>STS connection</h2>
-          <p>
-            Current mode: <b>{live.currentMode.toUpperCase()}</b>
-            {live.currentMode === 'mock' && ' — tokens are not valid on meters.'}
+          <div className="summary-head">
+            <h2>STS connection</h2>
+            <span className={`mode-pill ${live.currentMode}`}>{live.currentMode === 'mock' ? 'Test mode' : 'Live'}</span>
+          </div>
+          <p className="hint" style={{ margin: '0.25rem 0 1.25rem' }}>
+            {live.currentMode === 'mock'
+              ? 'Tokens issued now are practice tokens and will not load on a meter. Live vending needs every step below, then an API restart.'
+              : 'Connected to the vendor. Revoking approvals stops live vending immediately.'}
           </p>
-          <p className="hint">Live mode needs ALL of the following, then an API restart:</p>
-          <ol>
-            <li>Written authorization and a vend-only API account from the vendor.</li>
-            <li>HTTPS or a VPN route to the vendor API (configured on the server).</li>
-            <li>
-              Server settings <code>STS_MODE=live</code> and <code>STS_LIVE_ENABLED=true</code> (now: {live.requestedMode}, {live.envEnabled ? 'enabled' : 'disabled'}).
-            </li>
-            <li>Approval by two different admins below (now: {live.approvals.length} of 2).</li>
-          </ol>
-          {live.approvals.length > 0 && (
-            <ul>
-              {live.approvals.map((a) => (
-                <li key={a.admin}>
-                  {a.admin} approved on {formatDate(a.approved_at)}
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="row">
+          <ul className="checklist">
+            {[
+              { done: null, title: 'Vendor authorization', detail: 'Written permission and a vend-only API account from the vendor. Checked offline.' },
+              { done: null, title: 'Secure route to the vendor', detail: 'HTTPS or a VPN to the vendor API, configured on the server.' },
+              {
+                done: live.requestedMode === 'live' && live.envEnabled,
+                title: 'Server settings',
+                detail: (
+                  <>
+                    <code>STS_MODE=live</code> and <code>STS_LIVE_ENABLED=true</code> — now {live.requestedMode}, {live.envEnabled ? 'enabled' : 'disabled'}.
+                  </>
+                ),
+              },
+              {
+                done: live.approvals.length >= 2,
+                title: `Two admin approvals (${live.approvals.length} of 2)`,
+                detail: live.approvals.length
+                  ? live.approvals.map((a) => `${a.admin} on ${formatDate(a.approved_at)}`).join(' · ')
+                  : 'Two different admins must approve below.',
+              },
+            ].map((s) => (
+              <li key={s.title} className={s.done ? 'done' : s.done === null ? 'manual' : ''}>
+                <span className="tick">{s.done ? <Icon name="check" size={14} /> : null}</span>
+                <div>
+                  <b>{s.title}</b>
+                  <div className="hint">{s.detail}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="row" style={{ marginTop: '1.25rem' }}>
             <button
-              className="primary"
+              className="ink"
               onClick={() =>
                 run('/api/admin/live-mode/approve', 'Approve live STS vending? Only do this after the vendor has authorized Tronic in writing.')
               }
             >
-              Approve live mode
+              <Icon name="shield" size={16} /> Approve live mode
             </button>
-            <button className="danger" onClick={() => run('/api/admin/live-mode/revoke', 'Revoke all approvals? Live vending stops immediately.')}>
-              Revoke all approvals
-            </button>
+            {live.approvals.length > 0 && (
+              <button className="danger-quiet" onClick={() => run('/api/admin/live-mode/revoke', 'Revoke all approvals? Live vending stops immediately.')}>
+                Revoke all approvals
+              </button>
+            )}
           </div>
         </div>
       )}

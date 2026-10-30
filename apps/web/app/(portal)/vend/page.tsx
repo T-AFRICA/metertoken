@@ -177,7 +177,7 @@ export default function VendPage() {
                 <dl className="kv">
                   <dt>Meter</dt><dd className="mono">{vend.meterNo}</dd>
                   <dt>Units</dt><dd>{vend.units} kWh</dd>
-                  <dt>Amount</dt><dd>{vend.currency} {vend.amount}</dd>
+                  <dt>Amount</dt><dd>{vend.currency} {Number(vend.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</dd>
                 </dl>
                 <div className="row" style={{ marginTop: '1.25rem' }}>
                   <button className="primary" onClick={print}><Icon name="printer" size={16} /> Print receipt</button>

@@ -1,7 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { Receipt } from '@/components/Receipt';
 import { api, errorText } from '@/lib/api';
 import { formatDate, isSupervisor, statusLabel, type Vend } from '@/lib/types';
@@ -61,19 +63,30 @@ export default function VendDetailPage() {
   const open = vend.status === 'UNKNOWN' || vend.status === 'MANUAL_REVIEW';
 
   return (
-    <div className="grid2">
-      <div className="card no-print">
-        <h1>
+    <>
+    <div className="page-head no-print">
+      <div>
+        <Link href="/history" className="back-link"><Icon name="back" size={14} /> Transactions</Link>
+        <div className="eyebrow">Ref {vend.reference.slice(0, 8).toUpperCase()}</div>
+        <h1 className="title-row">
           Transaction <span className={`badge ${vend.status}`}>{statusLabel(vend.status)}</span>
         </h1>
+      </div>
+      {vend.status === 'SUCCEEDED' && vend.tokens && (
+        <button className="primary" onClick={reprint}><Icon name="printer" size={16} /> Reprint receipt</button>
+      )}
+    </div>
+    <div className="grid2">
+      <div className="card no-print">
+        <h2>Details</h2>
         <table className="breakdown">
           <tbody>
             <tr><td>Reference</td><td className="mono">{vend.reference}</td></tr>
             <tr><td>Created</td><td>{formatDate(vend.createdAt)}</td></tr>
             <tr><td>Operator</td><td>{vend.operator}</td></tr>
             <tr><td>Meter</td><td className="mono">{vend.meterNo}</td></tr>
-            <tr><td>Units / amount</td><td>{vend.units} kWh · {vend.currency} {vend.amount}</td></tr>
-            <tr><td>Adapter</td><td>{vend.adapterMode === 'mock' ? <span className="badge mock">MOCK</span> : 'live'}</td></tr>
+            <tr><td>Units / amount</td><td>{vend.units} kWh · {vend.currency} {Number(vend.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
+            <tr><td>Mode</td><td>{vend.adapterMode === 'mock' ? <span className="badge mock">Test token</span> : 'Live'}</td></tr>
             {vend.errorMessage && <tr><td>Message</td><td>{vend.errorMessage}</td></tr>}
             {vend.resolutionNote && <tr><td>Resolution</td><td>{vend.resolutionNote}</td></tr>}
             {!vend.tokens && vend.tokenLast4 && <tr><td>Token</td><td className="mono">•••• {vend.tokenLast4} (hidden)</td></tr>}
@@ -81,9 +94,6 @@ export default function VendDetailPage() {
         </table>
         {error && <div className="alert error">{error}</div>}
         {info && <div className="alert warn">{info}</div>}
-        {vend.status === 'SUCCEEDED' && vend.tokens && (
-          <button className="primary" onClick={reprint} style={{ marginTop: '1rem' }}>Reprint receipt</button>
-        )}
 
         {open && isSupervisor(me.user.role) && (
           <>
@@ -119,5 +129,6 @@ export default function VendDetailPage() {
         </div>
       )}
     </div>
+    </>
   );
 }

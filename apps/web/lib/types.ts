@@ -63,7 +63,7 @@ export function formatToken(t: string): string {
 }
 
 /** "MANUAL_REVIEW" → "Manual review", for status badges. */
-export const statusLabel = (s: string) => s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, ' ');
+export const statusLabel = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase().replace(/_/g, ' ');
 
 export const formatDate = (iso: string) =>
   new Date(iso).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
