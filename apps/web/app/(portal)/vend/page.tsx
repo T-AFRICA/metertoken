@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { Receipt } from '@/components/Receipt';
+import { Stat, type Bar } from '@/components/Stat';
 import { api, ApiError, errorText } from '@/lib/api';
 import { formatToken, isSupervisor, statusLabel, type Quote, type Vend, type VendStatus } from '@/lib/types';
 import { useSession } from '../session';
@@ -218,6 +219,21 @@ export default function VendPage() {
   const sold = (recent ?? []).filter((r) => r.status === 'SUCCEEDED');
   const attention = (recent ?? []).filter((r) => r.status === 'UNKNOWN' || r.status === 'MANUAL_REVIEW').length;
   const money = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const kwh = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 1 });
+  const clock = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const salesTotal = sold.reduce((s, r) => s + Number(r.amount), 0);
+  const unitsTotal = sold.reduce((s, r) => s + Number(r.units), 0);
+  const last = sold.reduce<RecentVend | undefined>((a, r) => (!a || r.createdAt > a.createdAt ? r : a), undefined);
+  // The last ten hours of today's sales, one bar per hour, ending with the current hour.
+  const byHour = (measure: (r: RecentVend) => number, tip: (hour: string, n: number) => string): Bar[] => {
+    const now = new Date().getHours();
+    return Array.from({ length: Math.min(10, now + 1) }, (_, i) => {
+      const h = now - (Math.min(10, now + 1) - 1) + i;
+      const n = sold.filter((r) => new Date(r.createdAt).getHours() === h).reduce((s, r) => s + measure(r), 0);
+      const hour = `${String(h).padStart(2, '0')}:00`;
+      return { label: hour, value: n, tip: tip(hour, n) };
+    });
+  };
   const own = me.user.role === 'cashier';
 
   return (
@@ -232,10 +248,36 @@ export default function VendPage() {
       </div>
 
       <div className="grid4">
-        <div className="stat"><div className="k"><Icon name="bolt" size={28} />{own ? 'Your tokens' : 'Tokens'} today</div><div className="v">{recent ? sold.length : '–'}</div></div>
-        <div className="stat"><div className="k"><Icon name="chart" size={28} />{own ? 'Your sales' : 'Sales'} today ({me.currency})</div><div className="v">{recent ? money(sold.reduce((s, r) => s + Number(r.amount), 0)) : '–'}</div></div>
-        <div className="stat"><div className="k"><Icon name="meter" size={28} />Units sold (kWh)</div><div className="v">{recent ? sold.reduce((s, r) => s + Number(r.units), 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '–'}</div></div>
-        <div className={`stat ${attention ? 'warn' : ''}`}><div className="k"><Icon name="alert" size={28} />Need attention</div><div className="v">{recent ? attention : '–'}</div></div>
+        <Stat
+          icon="bolt"
+          label={`${own ? 'Your tokens' : 'Tokens'} today`}
+          value={recent ? sold.length : '–'}
+          trend={recent ? byHour(() => 1,(h, n) => `${h} · ${n} token${n === 1 ? '' : 's'}`) : undefined}
+          note={last ? `Last at ${clock(last.createdAt)}` : recent && 'None yet today'}
+        />
+        <Stat
+          icon="chart"
+          label={`${own ? 'Your sales' : 'Sales'} today`}
+          prefix={me.currency}
+          value={recent ? money(salesTotal) : '–'}
+          trend={recent ? byHour((r) => Number(r.amount), (h, n) => `${h} · ${me.currency} ${money(n)}`) : undefined}
+          note={sold.length ? `Avg ${me.currency} ${money(salesTotal / sold.length)} per token` : recent && 'No sales yet'}
+        />
+        <Stat
+          icon="meter"
+          label="Units sold"
+          suffix="kWh"
+          value={recent ? kwh(unitsTotal) : '–'}
+          trend={recent ? byHour((r) => Number(r.units), (h, n) => `${h} · ${kwh(n)} kWh`) : undefined}
+          note={sold.length ? `Avg ${kwh(unitsTotal / sold.length)} kWh per token` : recent && 'No units yet'}
+        />
+        <Stat
+          icon={attention ? 'alert' : 'check'}
+          label="Need attention"
+          tone={attention ? 'warn' : 'ok'}
+          value={recent ? attention : '–'}
+          note={recent && (attention ? <Link href="/history">Resolve in Transactions →</Link> : 'All clear — nothing pending')}
+        />
       </div>
 
       <div className="vend-layout">

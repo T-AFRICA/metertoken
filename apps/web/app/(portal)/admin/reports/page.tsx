@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
+import { Bars, Stat, type Bar } from '@/components/Stat';
 import { api, errorText } from '@/lib/api';
 import { statusLabel } from '@/lib/types';
 
@@ -16,6 +17,8 @@ interface Row {
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
+const money = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const kwh = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 1 });
 
 export default function ReportsPage() {
   const [from, setFrom] = useState(today().slice(0, 8) + '01');
@@ -41,6 +44,23 @@ export default function ReportsPage() {
   const units = ok.reduce((s, r) => s + Number(r.units), 0);
   const count = ok.reduce((s, r) => s + r.count, 0);
   const attention = rows.filter((r) => r.status === 'UNKNOWN' || r.status === 'MANUAL_REVIEW').reduce((s, r) => s + r.count, 0);
+  const currency = rows[0]?.currency ?? '';
+
+  // One bar per day of the period (gaps filled with zero), or only the days with sales for long periods.
+  const perDay = new Map<string, number>();
+  for (const r of ok) perDay.set(r.day, (perDay.get(r.day) ?? 0) + Number(r.amount));
+  const days = [...perDay.keys()].sort();
+  const span = Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000) + 1;
+  const range =
+    span > 0 && span <= 62
+      ? Array.from({ length: span }, (_, i) => new Date(Date.parse(from) + i * 86_400_000).toISOString().slice(0, 10))
+      : days;
+  const chart: Bar[] = range.map((d) => {
+    const label = new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+    const value = perDay.get(d) ?? 0;
+    return { label, value, tip: `${label} · ${currency} ${money(value)}` };
+  });
+  const peak = chart.reduce<Bar | undefined>((a, b) => (b.value > (a?.value ?? 0) ? b : a), undefined);
 
   return (
     <>
@@ -61,11 +81,35 @@ export default function ReportsPage() {
       </div>
       {error && <div className="alert error">{error}</div>}
       <div className="grid4">
-        <div className="stat"><div className="k"><Icon name="bolt" size={16} /> Successful vends</div><div className="v">{count}</div></div>
-        <div className="stat"><div className="k"><Icon name="chart" size={16} /> Sales</div><div className="v">{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div></div>
-        <div className="stat"><div className="k"><Icon name="meter" size={16} /> Units sold (kWh)</div><div className="v">{units.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div></div>
-        <div className={`stat ${attention ? 'warn' : ''}`}><div className="k"><Icon name="alert" size={16} /> Needing attention</div><div className="v">{attention}</div></div>
+        <Stat icon="bolt" label="Successful vends" value={count} note={`${days.length} day${days.length === 1 ? '' : 's'} with sales`} />
+        <Stat icon="chart" label="Sales" prefix={currency} value={money(total)} note={count ? `Avg ${currency} ${money(total / count)} per token` : 'No sales in this period'} />
+        <Stat icon="meter" label="Units sold" suffix="kWh" value={kwh(units)} note={count ? `Avg ${kwh(units / count)} kWh per token` : 'No units in this period'} />
+        <Stat
+          icon={attention ? 'alert' : 'check'}
+          label="Needing attention"
+          tone={attention ? 'warn' : 'ok'}
+          value={attention}
+          note={attention ? 'Open Transactions to resolve' : 'All clear'}
+        />
       </div>
+      {chart.length > 1 && (
+        <div className="card chart-card">
+          <div className="chart-head">
+            <div>
+              <h2>Daily sales</h2>
+              <p className="hint">Successful vends per day, in {currency}. Hover a bar for the figure.</p>
+            </div>
+            {peak && (
+              <div className="peak">
+                <span>Best day</span>
+                <b>{currency} {money(peak.value)}</b>
+                <em>{peak.label}</em>
+              </div>
+            )}
+          </div>
+          <Bars bars={chart} height={180} labelEvery={Math.ceil(chart.length / 10)} />
+        </div>
+      )}
       <div className="card flush table-wrap">
         <table className="stack">
           <thead>
