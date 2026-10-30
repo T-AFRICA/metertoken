@@ -143,9 +143,8 @@ main { width: 100%; max-width: 1320px; margin: 0 auto; padding: 2rem 2.5rem 4rem
     background: transparent; border: 0; color: #fff;
   }
   .menu-btn:hover, .menu-close:hover { background: rgba(255, 255, 255, 0.14) !important; box-shadow: none !important; transform: none !important; }
-  .mobile-logo { display: flex; margin: 0 auto; }
+  .mobile-logo { display: flex; margin-left: auto; padding-right: 0.5rem; }
   .mobile-logo img { width: 136px; height: auto; display: block; }
-  .menu-balance { width: 42px; flex: none; }
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0; height: 100dvh; width: min(84vw, 300px); z-index: 50;
     transform: translateX(-102%); transition: transform 0.35s var(--ease); overflow-y: auto;
