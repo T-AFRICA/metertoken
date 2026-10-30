@@ -649,10 +649,66 @@ tr:hover .badge { transform: translateX(2px); }
 .login-brand > * { animation: rise 0.7s var(--ease) both; }
 .login-brand > *:nth-child(2) { animation-delay: 0.1s; }
 .login-brand > *:nth-child(3) { animation-delay: 0.2s; }
+.login-brand .wordmark img { animation: logo-in 0.9s var(--ease) both; }
+@keyframes logo-in { from { opacity: 0; transform: scale(0.9); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+/* The sun glow breathes slowly. */
+.login-brand::before { animation: breathe 6s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+/* Rings radiate out from the sun, one every two seconds. */
+.login-brand > .radiate { position: absolute; top: 0; right: 0; width: 0; height: 0; z-index: -1; pointer-events: none; animation: none; }
+.radiate i {
+  position: absolute; left: -110px; top: -110px; width: 220px; height: 220px; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35); opacity: 0; animation: radiate 6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.radiate i:nth-child(2) { animation-delay: 2s; }
+.radiate i:nth-child(3) { animation-delay: 4s; }
+@keyframes radiate { 0% { transform: scale(0.3); opacity: 0; } 15% { opacity: 0.7; } 100% { transform: scale(4); opacity: 0; } }
+/* "one token" gets its highlight drawn in after the headline lands. */
+.login-brand h2 em { background: linear-gradient(var(--ink), var(--ink)) no-repeat left center / 0% 100%; animation: highlight 0.7s var(--ease) 0.65s both; }
+@keyframes highlight { to { background-size: 100% 100%; } }
+
+/* The form arrives piece by piece. */
 .login-card { animation: rise 0.7s var(--ease) 0.15s both; }
+.login-card > * { animation: rise 0.6s var(--ease) both; }
+.login-card > :nth-child(1) { animation-delay: 0.25s; }
+.login-card > :nth-child(2) { animation-delay: 0.3s; }
+.login-card > :nth-child(3) { animation-delay: 0.35s; }
+.login-card > :nth-child(4) { animation-delay: 0.42s; }
+.login-card > :nth-child(5) { animation-delay: 0.49s; }
+.login-card > :nth-child(6) { animation-delay: 0.56s; }
+.login-card > :nth-child(7) { animation-delay: 0.63s; }
+.login-card > :nth-child(n+8) { animation-delay: 0.7s; }
+.input-icon:focus-within > svg { animation: pop 0.35s var(--ease); }
+/* A wrong password shakes the card, the way a person shakes their head. */
+.login-card.shake { animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-5px); }
+  40%, 60% { transform: translateX(5px); }
+}
+/* An idle sheen crosses the button every few seconds. */
+button.login-submit::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: translateX(-120%) skewX(-20deg); animation: sheen 5s var(--ease) 1.4s infinite;
+}
+button.login-submit:disabled::before { animation: none; opacity: 0; }
+@keyframes sheen { 0% { transform: translateX(-120%) skewX(-20deg); } 25%, 100% { transform: translateX(320%) skewX(-20deg); } }
+button.primary.login-submit.done:disabled, button.primary.login-submit.done:disabled:hover {
+  background: linear-gradient(180deg, #22a55b 0%, #17803f 100%); border-color: #157a3c; opacity: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 12px 24px -10px rgba(23, 128, 63, 0.55);
+}
+button.login-submit.done svg { animation: pop 0.45s var(--ease) both; }
+@media (max-width: 860px) {
+  .login-brand > .radiate { right: auto; left: 50%; }
+  .login-form-wrap { animation: sheet 0.8s var(--ease) 0.1s both; }
+  .login-card { animation: none; }
+}
+@keyframes sheet { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: none; } }
 .meter-face { transition: transform 0.6s var(--ease), box-shadow 0.6s var(--ease); }
 .meter-face:hover { transform: translateY(-4px) rotate(-1deg); box-shadow: 0 28px 50px rgba(0, 0, 0, 0.45); }
-.meter-lcd .r2 { animation: blink 1.6s steps(1) 1s 3; }
+.meter-lcd .r2 { animation: blink 1.6s steps(1) 2.4s 2; }
 .meter-keys span.on { animation: pulse 2.2s ease-in-out infinite; }
 .meter-keys span { transition: background 0.2s; }
 .meter-face:hover .meter-keys span:not(.on) { background: #48433c; }
