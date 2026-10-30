@@ -89,7 +89,7 @@ export default function HistoryPage() {
       </div>
       {error && <div className="alert error">{error}</div>}
       <div className="card flush table-wrap">
-        <table>
+        <table className="stack">
           <thead>
             <tr>
               <th>Time</th>
@@ -104,16 +104,16 @@ export default function HistoryPage() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="click" onClick={() => router.push(`/vends/${r.id}`)}>
-                <td className="nowrap muted">{formatDate(r.createdAt)}</td>
-                <td className="mono">{r.meterNo}</td>
-                <td className="nowrap">{r.operator}</td>
-                <td className="num">{r.units}</td>
-                <td className="num">{r.currency} {r.amount}</td>
-                <td>
+                <td className="nowrap muted" data-label="Time">{formatDate(r.createdAt)}</td>
+                <td className="mono" data-label="Meter">{r.meterNo}</td>
+                <td className="nowrap" data-label="Operator">{r.operator}</td>
+                <td className="num" data-label="kWh">{r.units}</td>
+                <td className="num" data-label="Amount">{r.currency} {r.amount}</td>
+                <td data-label="Status">
                   <span className={`badge ${r.status}`}>{r.status}</span>{' '}
                   {r.adapterMode === 'mock' && <span className="badge mock">MOCK</span>}
                 </td>
-                <td className="mono">{r.tokenLast4 ? `•••• ${r.tokenLast4}` : '—'}</td>
+                <td className="mono" data-label="Token">{r.tokenLast4 ? `•••• ${r.tokenLast4}` : '—'}</td>
               </tr>
             ))}
             {rows.length === 0 && (

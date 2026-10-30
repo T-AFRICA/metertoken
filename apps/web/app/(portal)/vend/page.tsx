@@ -257,7 +257,7 @@ export default function VendPage() {
                       setMeter(null);
                     }}
                     onKeyDown={(e) => e.key === 'Enter' && verify()}
-                    placeholder="Enter the 11 or 13 digit meter number"
+                    placeholder="11 or 13 digits"
                     aria-label="Meter number"
                   />
                   <button className="ink" onClick={verify} disabled={!meterNo || verifying}>
@@ -314,18 +314,18 @@ export default function VendPage() {
               <Link href="/history" className="link-quiet">View all</Link>
             </div>
             <div className="table-wrap">
-              <table>
+              <table className="stack">
                 <thead>
                   <tr><th>Time</th><th>Meter</th><th className="num">kWh</th><th className="num">Amount</th><th>Status</th></tr>
                 </thead>
                 <tbody>
                   {(recent ?? []).slice(0, 6).map((r) => (
                     <tr key={r.id} className="click" onClick={() => router.push(`/vends/${r.id}`)}>
-                      <td className="nowrap muted">{new Date(r.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
-                      <td className="mono">{r.meterNo}</td>
-                      <td className="num">{r.units}</td>
-                      <td className="num">{r.currency} {money(Number(r.amount))}</td>
-                      <td><span className={`badge ${r.status}`}>{r.status}</span></td>
+                      <td className="nowrap muted" data-label="Time">{new Date(r.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
+                      <td className="mono" data-label="Meter">{r.meterNo}</td>
+                      <td className="num" data-label="kWh">{r.units}</td>
+                      <td className="num" data-label="Amount">{r.currency} {money(Number(r.amount))}</td>
+                      <td data-label="Status"><span className={`badge ${r.status}`}>{r.status}</span></td>
                     </tr>
                   ))}
                   {recent && recent.length === 0 && (

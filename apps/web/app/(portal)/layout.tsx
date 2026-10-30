@@ -50,6 +50,20 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const [me, setMe] = useState<Me | null>(null);
   const path = usePathname();
   const now = useClock();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // The phone menu closes itself on navigation and on Escape.
+  useEffect(() => setMenuOpen(false), [path]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
 
   useEffect(() => {
     api<Me>('/api/auth/me')
@@ -82,11 +96,27 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   return (
     <SessionContext.Provider value={me}>
       <div className="shell">
-        <aside className="sidebar">
-          <Link href="/vend" className="wordmark">
+        <header className="mobile-bar">
+          <button className="menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
+            <Icon name="menu" size={22} />
+          </button>
+          <Link href="/vend" className="mobile-logo">
             <Image src="/tronic-logo-white.png" alt="Tronic" width={667} height={148} priority />
-            <span>Token desk</span>
           </Link>
+          <span className={`env-tag ${me.adapterMode}`}><b>{me.adapterMode === 'mock' ? 'TEST' : 'LIVE'}</b></span>
+        </header>
+        {menuOpen && <div className="scrim" onClick={() => setMenuOpen(false)} aria-hidden />}
+
+        <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
+          <div className="sidebar-top">
+            <Link href="/vend" className="wordmark">
+              <Image src="/tronic-logo-white.png" alt="Tronic" width={667} height={148} priority />
+              <span>Token desk</span>
+            </Link>
+            <button className="menu-close" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+              <Icon name="x" size={20} />
+            </button>
+          </div>
           {NAV.map((group) => {
             const items = group.items.filter((i) => i.show(role));
             if (!items.length) return null;
@@ -128,7 +158,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               {now &&
                 `${now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · ${now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`}
             </span>
-            <span className={`env-tag ${me.adapterMode}`}>
+            <span className={`env-tag wide ${me.adapterMode}`}>
               {me.adapterMode === 'mock' ? (
                 <>Practice tokens — they won’t load on a real meter <b>TEST</b></>
               ) : (

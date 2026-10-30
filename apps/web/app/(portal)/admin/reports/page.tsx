@@ -66,19 +66,19 @@ export default function ReportsPage() {
         <div className={`stat ${attention ? 'warn' : ''}`}><div className="k"><Icon name="alert" size={16} /> Needing attention</div><div className="v">{attention}</div></div>
       </div>
       <div className="card flush table-wrap">
-        <table>
+        <table className="stack">
           <thead>
             <tr><th>Day</th><th>Operator</th><th>Status</th><th className="num">Count</th><th className="num">kWh</th><th className="num">Amount</th></tr>
           </thead>
           <tbody>
             {rows.map((r, i) => (
               <tr key={i}>
-                <td>{r.day}</td>
-                <td>{r.operator}</td>
-                <td><span className={`badge ${r.status}`}>{r.status}</span></td>
-                <td className="num">{r.count}</td>
-                <td className="num">{r.units}</td>
-                <td className="num">{r.currency} {Number(r.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td data-label="Day">{r.day}</td>
+                <td data-label="Operator">{r.operator}</td>
+                <td data-label="Status"><span className={`badge ${r.status}`}>{r.status}</span></td>
+                <td className="num" data-label="Count">{r.count}</td>
+                <td className="num" data-label="kWh">{r.units}</td>
+                <td className="num" data-label="Amount">{r.currency} {Number(r.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
               </tr>
             ))}
             {rows.length === 0 && <tr><td colSpan={6} className="empty">No data for this period.</td></tr>}

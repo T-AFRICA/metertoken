@@ -19,6 +19,7 @@ const PATHS = {
   lock: 'M5 11h14v10H5V11Zm3 0V7a4 4 0 1 1 8 0v4',
   receipt: 'M6 2h12v20l-3-2-3 2-3-2-3 2V2Zm3 6h6m-6 4h6m-6 4h4',
   zap: 'M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2Z',
+  menu: 'M4 6h16M4 12h16M4 18h16',
 } as const;
 
 export type IconName = keyof typeof PATHS;
