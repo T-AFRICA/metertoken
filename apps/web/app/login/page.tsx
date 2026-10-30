@@ -162,10 +162,11 @@ export default function LoginPage() {
             <Icon name="shield" size={16} />
             <span>Every sale is logged against your name, so please don’t share your login. Forgot it? Ask your supervisor to reset it.</span>
           </p>
-          <div className="login-mobile-foot">Tronic Kenya · Nairobi</div>
         </form>
         )}
       </section>
+      {/* Phones close the page with a short red band under the white sheet. */}
+      <footer className="login-mobile-band">Tronic Kenya · Nairobi</footer>
     </div>
   );
 }
