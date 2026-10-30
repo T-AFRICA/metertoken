@@ -39,7 +39,7 @@ export default function LoginPage() {
             <li><Icon name="check" /> Encrypted tokens and a tamper-evident activity log</li>
           </ul>
         </div>
-        <div className="hint" style={{ color: '#6f8a80', position: 'relative', zIndex: 1 }}>© Tronic · Authorised agents only</div>
+        <div className="hint" style={{ color: '#7c7c82', position: 'relative', zIndex: 1 }}>© Tronic · Authorised agents only</div>
       </section>
 
       <section className="login-form-wrap">
