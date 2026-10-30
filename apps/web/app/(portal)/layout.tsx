@@ -65,6 +65,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   if (!me) return <main className="hint">Loading…</main>;
 
   const role = me.user.role;
+  const current = NAV.flatMap((g) => g.items.map((i) => ({ group: g.label, label: i.label, href: i.href }))).find((i) => path?.startsWith(i.href));
+  const crumbs = current ? [current.group, current.label] : path?.startsWith('/vends/') ? ['Vending', 'Transactions', 'Detail'] : [];
   const initials = me.user.displayName
     .split(/\s+/)
     .map((w) => w[0])
@@ -116,6 +118,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
         <div className="content">
           <div className="content-top">
+            <nav className="crumbs" aria-label="Breadcrumb">
+              {crumbs.map((c, i) => (
+                <span key={c} className={i === crumbs.length - 1 ? 'here' : ''}>{c}</span>
+              ))}
+            </nav>
+            <span className="spacer" />
             <span className="clock">
               {now &&
                 `${now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · ${now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`}
