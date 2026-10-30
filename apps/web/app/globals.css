@@ -17,6 +17,7 @@
   --red: #ef1c26;
   --red-ink: #c4121b;
   --red-wash: #fdeceb;
+  --red-panel: linear-gradient(180deg, var(--red) 0%, #d8141d 60%, #b80f17 100%);
 
   --night: #151311;
   --night-2: #1d1a17;
@@ -62,7 +63,7 @@ code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2)
   --side-text: rgba(255, 255, 255, 0.9);
   --side-muted: rgba(255, 255, 255, 0.66);
   --side-line: rgba(255, 255, 255, 0.24);
-  background: linear-gradient(180deg, var(--red) 0%, #d8141d 60%, #b80f17 100%); color: var(--side-text);
+  background: var(--red-panel); color: var(--side-text);
   display: flex; flex-direction: column;
   position: sticky; top: 0; height: 100vh;
   padding: 1.6rem 1rem 1.1rem;
@@ -273,11 +274,13 @@ td.nowrap, .nowrap { white-space: nowrap; }
 
 /* ---- Login ---- */
 .login-split { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
-.login-brand { background: var(--night); color: var(--night-text); padding: 2.75rem 3.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
+.login-brand { background: var(--red-panel); color: rgba(255, 255, 255, 0.9); padding: 2.75rem 3.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
 .login-brand .wordmark { padding: 0; }
+.login-brand .wordmark b i { color: var(--ink); }
+.login-brand .wordmark span { color: rgba(255, 255, 255, 0.7); }
 .login-brand h2 { font-family: var(--display); font-weight: 800; font-size: 2.9rem; line-height: 1.08; letter-spacing: -0.03em; color: #fff; margin: 0 0 1.25rem; max-width: 13ch; }
-.login-brand h2 em { color: var(--red); font-style: normal; }
-.login-brand p { color: var(--night-muted); max-width: 40ch; margin: 0; font-size: 1rem; }
+.login-brand h2 em { color: var(--ink); font-style: normal; }
+.login-brand p { color: rgba(255, 255, 255, 0.8); max-width: 40ch; margin: 0; font-size: 1rem; }
 .meter-face {
   margin-top: 2.5rem; max-width: 340px; border-radius: 14px; padding: 1rem 1rem 0.9rem;
   background: #2a2723; border: 1px solid #3a3631; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
@@ -292,7 +295,7 @@ td.nowrap, .nowrap { white-space: nowrap; }
 .meter-keys { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 0.85rem; }
 .meter-keys span { height: 14px; border-radius: 3px; background: #3a3631; }
 .meter-keys span.on { background: var(--red); opacity: 0.85; }
-.login-foot { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--night-muted); }
+.login-foot { display: flex; justify-content: space-between; font-size: 0.82rem; color: rgba(255, 255, 255, 0.7); }
 .login-form-wrap { display: grid; place-items: center; padding: 2rem; background: var(--paper); }
 .login-card { width: 100%; max-width: 360px; }
 .login-card h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
