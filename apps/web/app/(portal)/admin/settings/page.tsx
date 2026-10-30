@@ -31,7 +31,13 @@ export default function SettingsPage() {
 
   return (
     <>
-      <h1>Settings</h1>
+      <div className="page-head">
+        <div>
+          <div className="eyebrow">Management</div>
+          <h1>Settings</h1>
+          <p className="subtitle">Connection to the vendor STS service.</p>
+        </div>
+      </div>
       {error && <div className="alert error">{error}</div>}
       {live && (
         <div className="card">

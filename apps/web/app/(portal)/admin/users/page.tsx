@@ -48,9 +48,15 @@ export default function UsersPage() {
 
   return (
     <>
-      <h1>Users</h1>
+      <div className="page-head">
+        <div>
+          <div className="eyebrow">Management</div>
+          <h1>Users</h1>
+          <p className="subtitle">Accounts and roles. Changing a role, status or password signs the user out.</p>
+        </div>
+      </div>
       {error && <div className="alert error">{error}</div>}
-      <div className="card table-wrap">
+      <div className="card flush table-wrap">
         <table>
           <thead>
             <tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Last login</th><th /></tr>
@@ -65,13 +71,13 @@ export default function UsersPage() {
                     {ROLES.map((r) => <option key={r}>{r}</option>)}
                   </select>
                 </td>
-                <td>{u.active ? 'Active' : 'Disabled'}</td>
-                <td>{u.lastLoginAt ? formatDate(u.lastLoginAt) : '—'}</td>
-                <td className="row">
+                <td><span className={`badge ${u.active ? 'SUCCEEDED' : 'PENDING'}`}>{u.active ? 'Active' : 'Disabled'}</span></td>
+                <td className="nowrap muted">{u.lastLoginAt ? formatDate(u.lastLoginAt) : '—'}</td>
+                <td className="nowrap">
                   <button onClick={() => run(() => api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { active: !u.active } }))}>
                     {u.active ? 'Disable' : 'Enable'}
                   </button>
-                  <button onClick={() => resetPassword(u)}>Reset password</button>
+                  <button className="ghost" onClick={() => resetPassword(u)}>Reset password</button>
                 </td>
               </tr>
             ))}

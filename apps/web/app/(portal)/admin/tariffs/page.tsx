@@ -80,11 +80,13 @@ export default function TariffsPage() {
 
   return (
     <>
-      <h1>Tariffs</h1>
-      <p className="hint">
-        A new tariff version is a draft until a <b>different</b> admin approves it. The portal price is checked against the
-        vendor&apos;s result on every vend.
-      </p>
+      <div className="page-head">
+        <div>
+          <div className="eyebrow">Management</div>
+          <h1>Tariffs</h1>
+          <p className="subtitle">A new version stays a draft until a different admin approves it. The portal price is checked against the vendor result on every vend.</p>
+        </div>
+      </div>
       {error && <div className="alert error">{error}</div>}
 
       {tariffs.map((t) => (
@@ -100,13 +102,13 @@ export default function TariffsPage() {
               <tbody>
                 {t.versions.map((v) => (
                   <tr key={v.id}>
-                    <td><span className={`badge ${v.status === 'active' ? 'SUCCEEDED' : v.status === 'draft' ? 'UNKNOWN' : 'PENDING'}`}>{v.status}</span></td>
+                    <td><span className={`badge ${v.status}`}>{v.status}</span></td>
                     <td className="num">{v.baseRate}</td>
                     <td>
                       {[...v.percentCharges.map((c) => `${c.name} ${c.percent}%`), ...v.fixedCharges.map((c) => `${c.name} ${c.amount}`)].join(', ') || '—'}
                       {v.note && <div className="hint">{v.note}</div>}
                     </td>
-                    <td>{v.createdBy ?? 'system'} · {formatDate(v.createdAt)}</td>
+                    <td className="nowrap muted">{v.createdBy ?? 'system'} · {formatDate(v.createdAt)}</td>
                     <td>{v.approvedBy ?? '—'}</td>
                     <td>
                       {isAdmin && v.status === 'draft' && (

@@ -114,7 +114,7 @@ export default function VendDetailPage() {
         )}
       </div>
       {vend.status === 'SUCCEEDED' && vend.tokens && (
-        <div className="card">
+        <div className="receipt-stage">
           <Receipt vend={vend} reprint />
         </div>
       )}

@@ -3,13 +3,52 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Icon, type IconName } from '@/components/Icon';
 import { api, setCsrfToken } from '@/lib/api';
-import { canVend, isSupervisor, type Me } from '@/lib/types';
+import { canVend, isSupervisor, type Me, type Role } from '@/lib/types';
 import { SessionContext } from './session';
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: IconName;
+  show: (r: Role) => boolean;
+}
+
+const NAV: { label: string; items: NavItem[] }[] = [
+  {
+    label: 'Vending',
+    items: [
+      { href: '/vend', label: 'Generate token', icon: 'bolt', show: canVend },
+      { href: '/history', label: 'Transactions', icon: 'history', show: () => true },
+    ],
+  },
+  {
+    label: 'Management',
+    items: [
+      { href: '/admin/reports', label: 'Reports', icon: 'chart', show: (r) => isSupervisor(r) || r === 'auditor' },
+      { href: '/admin/tariffs', label: 'Tariffs', icon: 'tag', show: (r) => r !== 'cashier' },
+      { href: '/admin/users', label: 'Users', icon: 'users', show: (r) => r === 'admin' },
+      { href: '/admin/audit', label: 'Activity log', icon: 'shield', show: (r) => r === 'admin' || r === 'auditor' },
+      { href: '/admin/settings', label: 'Settings', icon: 'settings', show: (r) => r === 'admin' },
+    ],
+  },
+];
+
+function useClock() {
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const t = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(t);
+  }, []);
+  return now;
+}
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const [me, setMe] = useState<Me | null>(null);
   const path = usePathname();
+  const now = useClock();
 
   useEffect(() => {
     api<Me>('/api/auth/me')
@@ -25,14 +64,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   if (!me) return <main className="hint">Loading…</main>;
 
   const role = me.user.role;
-  const links: [string, string][] = [
-    ...(canVend(role) ? ([['/vend', 'Generate token']] as [string, string][]) : []),
-    ['/history', 'History'],
-    ...(isSupervisor(role) || role === 'auditor' ? ([['/admin/reports', 'Reports']] as [string, string][]) : []),
-    ...(role === 'admin' || role === 'supervisor' || role === 'auditor' ? ([['/admin/tariffs', 'Tariffs']] as [string, string][]) : []),
-    ...(role === 'admin' ? ([['/admin/users', 'Users'], ['/admin/settings', 'Settings']] as [string, string][]) : []),
-    ...(role === 'admin' || role === 'auditor' ? ([['/admin/audit', 'Activity log']] as [string, string][]) : []),
-  ];
+  const initials = me.user.displayName
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   async function logout() {
     await api('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
@@ -41,26 +78,60 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   return (
     <SessionContext.Provider value={me}>
-      {me.adapterMode === 'mock' && (
-        <div className="mock-banner">MOCK MODE — tokens shown here are NOT valid on real meters</div>
-      )}
-      <header className="topbar">
-        <Link href="/vend" className="brand">Tronic Token Portal</Link>
-        <nav className="nav">
-          {links.map(([href, label]) => (
-            <Link key={href} href={href} className={path?.startsWith(href) ? 'active' : ''}>
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <div className="who">
-          <span>
-            {me.user.displayName} · {role}
-          </span>
-          <button onClick={logout}>Sign out</button>
+      <div className="shell">
+        <aside className="sidebar">
+          <Link href="/vend" className="logo">
+            <span className="logo-mark"><Icon name="bolt" size={20} /></span>
+            <span className="logo-text">
+              Tronic
+              <small>Token Portal</small>
+            </span>
+          </Link>
+          {NAV.map((group) => {
+            const items = group.items.filter((i) => i.show(role));
+            if (!items.length) return null;
+            return (
+              <div className="nav-group" key={group.label}>
+                <div className="nav-label">{group.label}</div>
+                {items.map((i) => (
+                  <Link key={i.href} href={i.href} className={`nav-item ${path?.startsWith(i.href) ? 'active' : ''}`}>
+                    <Icon name={i.icon} />
+                    {i.label}
+                  </Link>
+                ))}
+              </div>
+            );
+          })}
+          <div className="side-foot">
+            <div className="user-card">
+              <div className="avatar">{initials}</div>
+              <div>
+                <div className="name">{me.user.displayName}</div>
+                <div className="role">{role}</div>
+              </div>
+            </div>
+            <button className="signout" onClick={logout}>
+              <Icon name="logout" size={16} /> Sign out
+            </button>
+          </div>
+        </aside>
+
+        <div className="content">
+          <div className="content-top">
+            {now && (
+              <span className="clock">
+                {now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} ·{' '}
+                {now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+            <span className={`env-pill ${me.adapterMode}`} title={me.adapterMode === 'mock' ? 'Tokens are not valid on real meters' : 'Connected to the vendor STS service'}>
+              <span className="env-dot" />
+              {me.adapterMode === 'mock' ? 'MOCK MODE · tokens not valid on meters' : 'LIVE · vendor STS'}
+            </span>
+          </div>
+          <main>{children}</main>
         </div>
-      </header>
-      <main>{children}</main>
+      </div>
     </SessionContext.Provider>
   );
 }

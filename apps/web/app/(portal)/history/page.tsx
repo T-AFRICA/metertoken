@@ -51,8 +51,14 @@ export default function HistoryPage() {
 
   return (
     <>
-      <h1>Transaction history</h1>
-      <div className="card row">
+      <div className="page-head">
+        <div>
+          <div className="eyebrow">Vending</div>
+          <h1>Transactions</h1>
+          <p className="subtitle">Every vend, with its status. Click a row for details, receipt and resolution.</p>
+        </div>
+      </div>
+      <div className="card toolbar">
         <div className="field">
           <label>Status</label>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -82,7 +88,7 @@ export default function HistoryPage() {
         </div>
       </div>
       {error && <div className="alert error">{error}</div>}
-      <div className="card table-wrap">
+      <div className="card flush table-wrap">
         <table>
           <thead>
             <tr>
@@ -98,9 +104,9 @@ export default function HistoryPage() {
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="click" onClick={() => router.push(`/vends/${r.id}`)}>
-                <td>{formatDate(r.createdAt)}</td>
+                <td className="nowrap muted">{formatDate(r.createdAt)}</td>
                 <td className="mono">{r.meterNo}</td>
-                <td>{r.operator}</td>
+                <td className="nowrap">{r.operator}</td>
                 <td className="num">{r.units}</td>
                 <td className="num">{r.currency} {r.amount}</td>
                 <td>
@@ -112,7 +118,7 @@ export default function HistoryPage() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="hint">No transactions found.</td>
+                <td colSpan={7} className="empty">No transactions found.</td>
               </tr>
             )}
           </tbody>
