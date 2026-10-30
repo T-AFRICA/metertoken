@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { SkeletonRows } from '@/components/Skeleton';
 import { Icon } from '@/components/Icon';
 import { api, errorText } from '@/lib/api';
 import { formatDate, groupMeter, isSupervisor, money, statusLabel, type Customer, type VendStatus } from '@/lib/types';
@@ -28,6 +29,7 @@ export default function CustomersPage() {
   const me = useSession();
   const manage = isSupervisor(me.user.role);
   const [items, setItems] = useState<Customer[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Customer | null>(null);
   const [record, setRecord] = useState<CustomerRecord | null>(null);
@@ -44,7 +46,8 @@ export default function CustomersPage() {
         setItems(r.items);
         setSelected((s) => (s ? r.items.find((c) => c.id === s.id) ?? s : s));
       })
-      .catch((e) => setError(errorText(e)));
+      .catch((e) => setError(errorText(e)))
+      .finally(() => setLoaded(true));
 
   useEffect(() => {
     const t = setTimeout(() => load(search), 250);
@@ -141,6 +144,7 @@ export default function CustomersPage() {
                 <tr><th>Meter</th><th>Name</th><th>Phone</th><th>Status</th></tr>
               </thead>
               <tbody>
+                {!loaded && <SkeletonRows cols={4} rows={3} />}
                 {items.map((c) => (
                   <tr key={c.id} className={`clickable ${selected?.id === c.id ? 'picked' : ''}`} onClick={() => setSelected(c)}>
                     <td className="mono" data-label="Meter">{groupMeter(c.meterNo)}</td>
@@ -149,7 +153,7 @@ export default function CustomersPage() {
                     <td data-label="Status"><span className={`badge ${c.active ? 'SUCCEEDED' : 'FAILED'}`}>{c.active ? 'Active' : 'Inactive'}</span></td>
                   </tr>
                 ))}
-                {items.length === 0 && <tr><td colSpan={4} className="empty">{search ? 'No customer matches that search.' : 'No customers yet. Register the first one above.'}</td></tr>}
+                {loaded && items.length === 0 && <tr><td colSpan={4} className="empty">{search ? 'No customer matches that search.' : 'No customers yet. Register the first one above.'}</td></tr>}
               </tbody>
             </table>
           </div>

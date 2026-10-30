@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icon, type IconName } from '@/components/Icon';
+import { PageLoader } from '@/components/Skeleton';
 import { api, setCsrfToken } from '@/lib/api';
 import { canVend, isSupervisor, type Me, type Role } from '@/lib/types';
 import { SessionContext } from './session';
@@ -77,7 +78,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       });
   }, []);
 
-  if (!me) return <main className="hint">Loading…</main>;
+  if (!me) return <PageLoader label="Loading the token desk" />;
 
   const role = me.user.role;
   // A transaction's detail page (/vends/:id) belongs under Transactions, not "/vend".

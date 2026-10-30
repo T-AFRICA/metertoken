@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SkeletonRows } from '@/components/Skeleton';
 import { Icon } from '@/components/Icon';
 import { Bars, Stat, type Bar } from '@/components/Stat';
 import { api, errorText } from '@/lib/api';
@@ -24,6 +25,7 @@ export default function ReportsPage() {
   const [from, setFrom] = useState(today().slice(0, 8) + '01');
   const [to, setTo] = useState(today());
   const [rows, setRows] = useState<Row[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
 
   async function load() {
@@ -32,6 +34,8 @@ export default function ReportsPage() {
       setError('');
     } catch (e) {
       setError(errorText(e));
+    } finally {
+      setLoaded(true);
     }
   }
   useEffect(() => {
@@ -116,6 +120,7 @@ export default function ReportsPage() {
             <tr><th>Day</th><th>Operator</th><th>Status</th><th className="num">Count</th><th className="num">kWh</th><th className="num">Amount</th></tr>
           </thead>
           <tbody>
+            {!loaded && <SkeletonRows cols={6} rows={3} />}
             {rows.map((r, i) => (
               <tr key={i}>
                 <td data-label="Day">{r.day}</td>
@@ -126,7 +131,7 @@ export default function ReportsPage() {
                 <td className="num" data-label="Amount">{r.currency} {Number(r.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
               </tr>
             ))}
-            {rows.length === 0 && <tr><td colSpan={6} className="empty">No data for this period.</td></tr>}
+            {loaded && rows.length === 0 && <tr><td colSpan={6} className="empty">No sales in this period. Try a wider date range.</td></tr>}
           </tbody>
         </table>
       </div>

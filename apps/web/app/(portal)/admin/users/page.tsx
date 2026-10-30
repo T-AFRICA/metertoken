@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SkeletonRows } from '@/components/Skeleton';
 import { api, errorText } from '@/lib/api';
 import { formatDate, type Role } from '@/lib/types';
 
@@ -14,13 +15,25 @@ interface UserRow {
 }
 
 const ROLES: Role[] = ['cashier', 'supervisor', 'admin', 'auditor'];
+const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ username: '', displayName: '', role: 'cashier' as Role, password: '' });
 
-  const load = () => api<{ items: UserRow[] }>('/api/admin/users').then((r) => setUsers(r.items)).catch((e) => setError(errorText(e)));
+  const load = () =>
+    api<{ items: UserRow[] }>('/api/admin/users')
+      .then((r) => setUsers(r.items))
+      .catch((e) => setError(errorText(e)))
+      .finally(() => setLoaded(true));
   useEffect(() => {
     load();
   }, []);
@@ -62,10 +75,16 @@ export default function UsersPage() {
             <tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Last login</th><th /></tr>
           </thead>
           <tbody>
+            {!loaded && <SkeletonRows cols={6} rows={3} />}
             {users.map((u) => (
               <tr key={u.id}>
                 <td className="mono">{u.username}</td>
-                <td>{u.displayName}</td>
+                <td>
+                  <span className="user-cell">
+                    <span className={`mini-avatar ${u.active ? '' : 'off'}`}>{initialsOf(u.displayName)}</span>
+                    {u.displayName}
+                  </span>
+                </td>
                 <td>
                   <select value={u.role} onChange={(e) => run(() => api(`/api/admin/users/${u.id}`, { method: 'PATCH', body: { role: e.target.value } }))}>
                     {ROLES.map((r) => <option key={r}>{r}</option>)}

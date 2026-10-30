@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { SkeletonRows } from '@/components/Skeleton';
 import { api, errorText } from '@/lib/api';
 import { formatDate, statusLabel, type VendStatus } from '@/lib/types';
 import { useSession } from '../session';
@@ -28,6 +29,7 @@ export default function HistoryPage() {
   const router = useRouter();
   const me = useSession();
   const [rows, setRows] = useState<Row[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const [meterNo, setMeterNo] = useState('');
@@ -45,6 +47,8 @@ export default function HistoryPage() {
       setError('');
     } catch (e) {
       setError(errorText(e));
+    } finally {
+      setLoaded(true);
     }
   }
 
@@ -106,6 +110,7 @@ export default function HistoryPage() {
             </tr>
           </thead>
           <tbody>
+            {!loaded && <SkeletonRows cols={7} />}
             {rows.map((r) => (
               <tr key={r.id} className="click" onClick={() => router.push(`/vends/${r.id}`)}>
                 <td className="nowrap muted" data-label="Time">{formatDate(r.createdAt)}</td>
@@ -121,9 +126,9 @@ export default function HistoryPage() {
                 <td className="mono" data-label="Token">{r.tokenLast4 ? `•••• ${r.tokenLast4}` : '—'}</td>
               </tr>
             ))}
-            {rows.length === 0 && (
+            {loaded && rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="empty">No transactions found.</td>
+                <td colSpan={7} className="empty">No transactions match these filters.</td>
               </tr>
             )}
           </tbody>

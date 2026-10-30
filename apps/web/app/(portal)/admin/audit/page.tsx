@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SkeletonRows } from '@/components/Skeleton';
 import { Icon } from '@/components/Icon';
 import { api, errorText } from '@/lib/api';
 import { formatDate } from '@/lib/types';
@@ -28,10 +29,17 @@ const ACTION_TONE: Record<string, string> = {
   'vend.needs_review': 'UNKNOWN',
   'vend.escalated': 'UNKNOWN',
   'auth.login_failed': 'FAILED',
+  'customer.login_failed': 'FAILED',
+  'customer.registered': 'SUCCEEDED',
 };
 
 const ACTION_LABEL: Record<string, string> = {
   'vend.requested': 'Vend requested',
+  'customer.registered': 'Customer registered',
+  'customer.updated': 'Customer changed',
+  'customer.login': 'Customer signed in',
+  'customer.login_failed': 'Customer sign-in failed',
+  'customer.token_viewed': 'Customer viewed token',
   'vend.succeeded': 'Token issued',
   'vend.failed': 'Vend failed',
   'vend.unknown': 'Result unknown',
@@ -83,6 +91,7 @@ function Detail({ detail }: { detail: Record<string, unknown> | null }) {
 
 export default function AuditPage() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [action, setAction] = useState('');
   const [error, setError] = useState('');
   const [chain, setChain] = useState<Chain | null>(null);
@@ -94,6 +103,8 @@ export default function AuditPage() {
       setEvents((await api<{ items: Event[] }>(`/api/admin/audit?${q}`)).items);
     } catch (e) {
       setError(errorText(e));
+    } finally {
+      setLoaded(true);
     }
   }
   useEffect(() => {
@@ -125,7 +136,7 @@ export default function AuditPage() {
       <div className="card flush">
         <div className="card-head">
           <div className="segmented">
-            {[['', 'All'], ['vend.', 'Vends'], ['auth.', 'Sign-ins'], ['tariff.', 'Tariffs'], ['user.', 'Users'], ['receipt.', 'Receipts']].map(([p, label]) => (
+            {[['', 'All'], ['vend.', 'Vends'], ['auth.', 'Sign-ins'], ['tariff.', 'Tariffs'], ['customer.', 'Customers'], ['user.', 'Users'], ['receipt.', 'Receipts']].map(([p, label]) => (
               <button key={p} className={action === p ? 'on' : ''} onClick={() => { setAction(p!); load(p); }}>{label}</button>
             ))}
           </div>
@@ -137,10 +148,11 @@ export default function AuditPage() {
               <tr><th>Time</th><th>User</th><th>Action</th><th>Object</th><th>Detail</th></tr>
             </thead>
             <tbody>
+              {!loaded && <SkeletonRows cols={5} />}
               {events.map((e) => (
                 <tr key={e.id}>
                   <td className="nowrap muted">{formatDate(e.at)}</td>
-                  <td className="nowrap">{e.actor}</td>
+                  <td className="nowrap">{e.actor === 'system' && e.action.startsWith('customer.') ? 'Customer' : e.actor}</td>
                   <td className="nowrap">
                     <span className={`badge ${ACTION_TONE[e.action] ?? 'PENDING'}`}>{actionLabel(e.action)}</span>
                   </td>
@@ -148,8 +160,8 @@ export default function AuditPage() {
                   <td><Detail detail={e.detail} /></td>
                 </tr>
               ))}
-              {events.length === 0 && (
-                <tr><td colSpan={5} className="empty">No events.</td></tr>
+              {loaded && events.length === 0 && (
+                <tr><td colSpan={5} className="empty">No events of this kind yet.</td></tr>
               )}
             </tbody>
           </table>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { SkeletonRows } from '@/components/Skeleton';
 import { Icon } from '@/components/Icon';
 import { Receipt } from '@/components/Receipt';
 import { Stat, type Bar } from '@/components/Stat';
@@ -361,6 +362,7 @@ export default function VendPage() {
                   <tr><th>Time</th><th>Meter</th><th className="num">kWh</th><th className="num">Amount</th><th>Status</th></tr>
                 </thead>
                 <tbody>
+                  {!recent && <SkeletonRows cols={5} rows={3} />}
                   {(recent ?? []).slice(0, 6).map((r) => (
                     <tr key={r.id} className="click" onClick={() => router.push(`/vends/${r.id}`)}>
                       <td className="nowrap muted" data-label="Time">{new Date(r.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
@@ -371,7 +373,7 @@ export default function VendPage() {
                     </tr>
                   ))}
                   {recent && recent.length === 0 && (
-                    <tr><td colSpan={5} className="empty">No sales yet today.</td></tr>
+                    <tr><td colSpan={5} className="empty">No sales yet today. The first token you generate shows up here.</td></tr>
                   )}
                 </tbody>
               </table>

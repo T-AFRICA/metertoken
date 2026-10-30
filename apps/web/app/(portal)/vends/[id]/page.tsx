@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { Receipt } from '@/components/Receipt';
+import { PageLoader } from '@/components/Skeleton';
 import { api, errorText } from '@/lib/api';
 import { formatDate, isSupervisor, statusLabel, type Vend } from '@/lib/types';
 import { useSession } from '../../session';
@@ -59,7 +60,7 @@ export default function VendDetailPage() {
   }
 
   if (error && !vend) return <div className="alert error">{error}</div>;
-  if (!vend) return <p className="hint">Loading…</p>;
+  if (!vend) return <PageLoader label="Loading the transaction" />;
   const open = vend.status === 'UNKNOWN' || vend.status === 'MANUAL_REVIEW';
 
   return (
@@ -87,47 +88,65 @@ export default function VendDetailPage() {
             <tr><td>Meter</td><td className="mono">{vend.meterNo}</td></tr>
             <tr><td>Units / amount</td><td>{vend.units} kWh · {vend.currency} {Number(vend.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td></tr>
             <tr><td>Mode</td><td>{vend.adapterMode === 'mock' ? <span className="badge mock">Test token</span> : 'Live'}</td></tr>
-            {vend.errorMessage && <tr><td>Message</td><td>{vend.errorMessage}</td></tr>}
             {vend.resolutionNote && <tr><td>Resolution</td><td>{vend.resolutionNote}</td></tr>}
             {!vend.tokens && vend.tokenLast4 && <tr><td>Token</td><td className="mono">•••• {vend.tokenLast4} (hidden)</td></tr>}
           </tbody>
         </table>
+        {vend.errorMessage && (
+          <div className={`alert ${vend.status === 'FAILED' ? 'error' : 'warn'}`}>
+            <Icon name="alert" size={16} /> {vend.errorMessage}
+          </div>
+        )}
         {error && <div className="alert error">{error}</div>}
         {info && <div className="alert warn">{info}</div>}
-
-        {open && isSupervisor(me.user.role) && (
-          <>
-            <h2>Resolve</h2>
-            <p className="hint">Check the vendor system first. Never generate a new token until this is resolved.</p>
-            <button onClick={checkStatus}>Check status with vendor</button>
-            <form onSubmit={resolve} style={{ marginTop: '1rem' }}>
-              <div className="field">
-                <label>Outcome</label>
-                <select value={outcome} onChange={(e) => setOutcome(e.target.value as 'SUCCEEDED' | 'FAILED')}>
-                  <option value="FAILED">No token was issued (FAILED)</option>
-                  <option value="SUCCEEDED">Token was issued (SUCCEEDED)</option>
-                </select>
-              </div>
-              {outcome === 'SUCCEEDED' && !vend.tokens && (
-                <div className="field">
-                  <label>Token from vendor records</label>
-                  <input className="mono" value={token} onChange={(e) => setToken(e.target.value)} placeholder="20 digits" />
-                </div>
-              )}
-              <div className="field">
-                <label>Note (what you checked)</label>
-                <textarea value={note} onChange={(e) => setNote(e.target.value)} minLength={5} required rows={3} />
-              </div>
-              <button className="primary">Save resolution</button>
-            </form>
-          </>
-        )}
       </div>
-      {vend.status === 'SUCCEEDED' && vend.tokens && (
+
+      {vend.status === 'SUCCEEDED' && vend.tokens ? (
         <div className="receipt-stage">
           <Receipt vend={vend} reprint />
         </div>
-      )}
+      ) : open && isSupervisor(me.user.role) ? (
+        <div className="card resolve-card no-print">
+          <div className="resolve-head">
+            <span className="resolve-icon"><Icon name="shield" size={20} /></span>
+            <div>
+              <h2>Resolve this vend</h2>
+              <p className="hint">Check the vendor system first. Never generate a new token for this meter until it is resolved.</p>
+            </div>
+          </div>
+          <button className="resolve-check" onClick={checkStatus}><Icon name="search" size={16} /> Check status with vendor</button>
+          <form onSubmit={resolve}>
+            <div className="field">
+              <label>Outcome</label>
+              <select value={outcome} onChange={(e) => setOutcome(e.target.value as 'SUCCEEDED' | 'FAILED')}>
+                <option value="FAILED">No token was issued (FAILED)</option>
+                <option value="SUCCEEDED">Token was issued (SUCCEEDED)</option>
+              </select>
+            </div>
+            {outcome === 'SUCCEEDED' && !vend.tokens && (
+              <div className="field">
+                <label>Token from vendor records</label>
+                <input className="mono" value={token} onChange={(e) => setToken(e.target.value)} placeholder="20 digits" />
+              </div>
+            )}
+            <div className="field">
+              <label>Note (what you checked)</label>
+              <textarea value={note} onChange={(e) => setNote(e.target.value)} minLength={5} required rows={3} />
+            </div>
+            <button className="primary"><Icon name="check" size={16} /> Save resolution</button>
+          </form>
+        </div>
+      ) : open ? (
+        <div className="card resolve-card no-print">
+          <div className="resolve-head">
+            <span className="resolve-icon"><Icon name="history" size={20} /></span>
+            <div>
+              <h2>Waiting for a supervisor</h2>
+              <p className="hint">The vendor did not confirm this vend. A supervisor will check it — do not sell another token to this meter until then.</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
     </>
   );
