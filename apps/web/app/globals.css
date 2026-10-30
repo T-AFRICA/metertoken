@@ -581,11 +581,24 @@ tr.picked td { background: var(--red-wash); }
 .cd-state { display: grid; justify-items: center; gap: 0.35rem; padding: 1rem 0.5rem; text-align: center; color: var(--ink-2); font-size: 0.8rem; line-height: 1.5; }
 .cd-state svg { color: var(--amber); }
 .cd-state b { font-family: var(--display); font-size: 1rem; color: var(--ink); }
-/* On phones the sign-in page links to the customer page instead of showing the desk. */
-.customer-link { display: none; align-items: center; gap: 0.6rem; margin-top: 1rem; padding: 0.85rem 1rem; border: 1px solid #f3c9cb; border-radius: 12px; background: #fff7f7; color: var(--ink-2); font-size: 0.8rem; text-decoration: none; }
-.customer-link b { color: var(--red-ink); }
-.customer-link svg { flex: none; color: var(--red-ink); }
-.customer-link svg:last-child { margin-left: auto; }
+/* Phones: a Customer / Staff switch at the top of the sign-in sheet. */
+.login-switch {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr; width: 100%; max-width: 420px; margin: 0 auto 1.6rem; padding: 5px;
+  border-radius: 16px; background: #f2f3f6; box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+.login-switch-pill {
+  position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 5px); border-radius: 12px; background: #fff;
+  box-shadow: 0 0 0 1px #f6c9cb, 0 6px 14px -6px rgba(215, 25, 32, 0.35); transition: transform 0.35s var(--ease);
+}
+.login-switch-pill.staff { transform: translateX(100%); }
+.login-switch button, .login-switch button:hover {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 0.45rem; height: 2.75rem; min-height: 0;
+  border: 0; background: none; box-shadow: none; transform: none; font-size: 0.9rem; font-weight: 600; color: var(--muted); transition: color 0.25s;
+}
+.login-switch button.on { color: var(--red-ink); }
+.login-switch button svg { flex: none; }
+.login-customer { width: 100%; max-width: 420px; margin: 0 auto; animation: rise 0.4s var(--ease) both; }
+.login-customer .cdesk { max-width: none; padding: 0; box-shadow: none; border-radius: 0; }
 /* The customer page on its own. */
 .token-page { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2.25rem 1rem 3rem; position: relative; overflow: hidden; isolation: isolate; background: radial-gradient(120% 70% at 0% 100%, rgba(70, 0, 6, 0.35) 0, transparent 60%), var(--red-panel); }
 .token-page header { text-align: center; color: rgba(255, 255, 255, 0.75); font-size: 0.75rem; animation: rise 0.6s var(--ease) both; }
@@ -674,7 +687,6 @@ button.login-submit:hover svg { transform: translateX(3px); }
   .login-head h1 { font-size: 1.75rem; }
   .login-badge { width: 52px; height: 52px; border-radius: 16px; }
   .login-mobile-foot { display: block; }
-  .customer-link { display: flex; }
 }
 
 /* ================= Receipt (screen + 80 mm thermal print) ================= */
