@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -81,7 +82,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <div className="shell">
         <aside className="sidebar">
           <Link href="/vend" className="wordmark">
-            <b>TR<i>O</i>NIC</b>
+            <Image src="/tronic-logo-white.png" alt="Tronic" width={667} height={148} priority />
             <span>Token desk</span>
           </Link>
           {NAV.map((group) => {

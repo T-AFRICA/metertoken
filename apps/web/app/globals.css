@@ -69,9 +69,7 @@ code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2)
   padding: 1.6rem 1rem 1.1rem;
 }
 .wordmark { display: block; padding: 0 0.6rem 2rem; text-decoration: none; color: #fff; }
-.wordmark b { display: block; font-family: var(--display); font-weight: 800; font-size: 1.15rem; letter-spacing: 0.22em; line-height: 1; }
-.wordmark b i { font-style: normal; color: var(--red); }
-.sidebar .wordmark b i { color: var(--ink); }
+.wordmark img { display: block; width: 148px; height: auto; }
 .wordmark span { display: block; margin-top: 0.5rem; font-size: 0.78rem; font-weight: 500; color: var(--night-muted); letter-spacing: 0.04em; }
 .sidebar .wordmark span { color: var(--side-muted); }
 .nav-group { margin-bottom: 1.4rem; }
@@ -124,6 +122,7 @@ main { width: 100%; max-width: 1160px; margin: 0 auto; padding: 2.4rem 2.5rem 5r
   .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.8rem 1rem; }
   .wordmark { padding: 0 0.75rem 0 0.25rem; }
   .wordmark span { display: none; }
+  .wordmark img { width: 104px; }
   .nav-group { margin: 0; display: flex; flex-wrap: wrap; gap: 0.2rem; }
   .nav-label { display: none; }
   .nav-item.active::before { display: none; }
@@ -276,8 +275,9 @@ td.nowrap, .nowrap { white-space: nowrap; }
 .login-split { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
 .login-brand { background: var(--red-panel); color: rgba(255, 255, 255, 0.9); padding: 2.75rem 3.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; }
 .login-brand .wordmark { padding: 0; }
-.login-brand .wordmark b i { color: var(--ink); }
+.login-brand .wordmark img { width: 190px; }
 .login-brand .wordmark span { color: rgba(255, 255, 255, 0.7); }
+.login-mobile-logo { display: none; width: 150px; height: auto; margin-bottom: 1.75rem; }
 .login-brand h2 { font-family: var(--display); font-weight: 800; font-size: 2.9rem; line-height: 1.08; letter-spacing: -0.03em; color: #fff; margin: 0 0 1.25rem; max-width: 13ch; }
 .login-brand h2 em { color: var(--ink); font-style: normal; }
 .login-brand p { color: rgba(255, 255, 255, 0.8); max-width: 40ch; margin: 0; font-size: 1rem; }
@@ -301,7 +301,7 @@ td.nowrap, .nowrap { white-space: nowrap; }
 .login-card h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
 .login-card .subtitle { margin-bottom: 2rem; }
 .fineprint { color: var(--muted); font-size: 0.8rem; margin-top: 1.5rem; line-height: 1.5; }
-@media (max-width: 860px) { .login-split { grid-template-columns: 1fr; } .login-brand { display: none; } }
+@media (max-width: 860px) { .login-split { grid-template-columns: 1fr; } .login-brand { display: none; } .login-mobile-logo { display: block; } }
 
 /* ================= Receipt (screen + 80 mm thermal print) ================= */
 .receipt {
@@ -387,8 +387,8 @@ button.huge.primary:not(:disabled):hover::after { animation: sweep 0.9s var(--ea
 .nav-item svg { transition: opacity 0.2s, color 0.2s, transform 0.3s var(--ease); }
 .nav-item:hover svg { opacity: 1; transform: scale(1.1); }
 .nav-item.active::before { animation: grow 0.35s var(--ease) both; transform-origin: center; }
-.wordmark b i { display: inline-block; transition: transform 0.6s var(--ease); }
-.wordmark:hover b i { transform: rotate(180deg); }
+.wordmark img { transition: transform 0.5s var(--ease), filter 0.5s var(--ease); }
+.wordmark:hover img { transform: scale(1.04); filter: drop-shadow(0 4px 10px rgba(110, 8, 13, 0.35)); }
 .avatar { transition: border-color 0.2s, background 0.2s; }
 .user-card:hover .avatar { border-color: #fff; }
 

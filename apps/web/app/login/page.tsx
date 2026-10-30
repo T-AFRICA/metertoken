@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { api, errorText } from '@/lib/api';
@@ -27,7 +28,7 @@ export default function LoginPage() {
     <div className="login-split">
       <section className="login-brand">
         <div className="wordmark">
-          <b>TR<i>O</i>NIC</b>
+          <Image src="/tronic-logo-white.png" alt="Tronic" width={667} height={148} priority />
           <span>Token desk</span>
         </div>
         <div>
@@ -54,6 +55,7 @@ export default function LoginPage() {
 
       <section className="login-form-wrap">
         <form className="login-card" onSubmit={submit}>
+          <Image className="login-mobile-logo" src="/tronic-logo.png" alt="Tronic" width={667} height={148} />
           <h1>Sign in</h1>
           <p className="subtitle">Use the username and password your supervisor set up for you.</p>
           <div className="field">
