@@ -543,13 +543,18 @@ tr.picked td { background: var(--red-wash); }
 .cd-recent .fd-label { margin: 0 0 0.2rem; }
 .cd-recent button { display: flex; align-items: center; gap: 0.7rem; width: 100%; min-height: 0; padding: 0.5rem 0.55rem; border: 1px solid transparent; border-radius: 12px; background: none; box-shadow: none; text-align: left; color: var(--ink-2); transition: background 0.2s, border-color 0.2s; }
 .cd-recent button { border-color: #f0f1f4; }
-/* White surfaces in the customer card pick up a red outline on hover. */
-.cd-who, .cd-recent button, .cdesk .input-icon input { transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s var(--ease); }
-.cd-who:hover, .cd-amount:hover, .cdesk .input-icon input:hover:not(:focus), .cd-recent button:hover:not(:disabled) {
-  border-color: var(--red); box-shadow: 0 0 0 3px rgba(239, 28, 38, 0.08); background: #fff;
+/* White surfaces in the customer card: a soft red outline and a slight lift, stronger on hover. */
+.cd-who, .cd-amount, .fd-chips button, .cd-recent button, .cdesk .input-icon input {
+  background: #fff; border-color: #f6c9cb;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 8px 18px -10px rgba(215, 25, 32, 0.28);
+  transition: border-color 0.2s, box-shadow 0.25s var(--ease), background 0.2s, transform 0.25s var(--ease);
 }
-.cd-recent button:hover:not(:disabled) { transform: translateY(-1px); }
-.fd-chips button:hover { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239, 28, 38, 0.08); }
+.cd-who:hover, .cd-amount:hover, .fd-chips button:hover, .cd-recent button:hover:not(:disabled), .cdesk .input-icon input:hover:not(:focus) {
+  border-color: var(--red); transform: translateY(-2px);
+  box-shadow: 0 0 0 3px rgba(239, 28, 38, 0.08), 0 14px 24px -12px rgba(215, 25, 32, 0.4);
+}
+.cd-amount:focus-within, .cdesk .input-icon input:focus { border-color: var(--red); transform: none; box-shadow: 0 0 0 4px rgba(239, 28, 38, 0.12), 0 8px 18px -10px rgba(215, 25, 32, 0.28); }
+.fd-chips button.sel { border-color: var(--red); background: var(--red-wash); }
 .cd-recent i { flex: none; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--red-wash); color: var(--red-ink); }
 .cd-recent i svg { fill: currentColor; }
 .cd-recent span { flex: 1; display: grid; }
