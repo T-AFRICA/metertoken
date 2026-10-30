@@ -2,8 +2,15 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { FlowPreview } from '@/components/FlowPreview';
 import { Icon } from '@/components/Icon';
-import { api, errorText } from '@/lib/api';
+import { api, ApiError, errorText } from '@/lib/api';
+
+// A plain fetch: the api() helper would bounce a 401 straight back to this page.
+const alreadySignedIn = () =>
+  fetch('/api/auth/me', { credentials: 'same-origin' })
+    .then((r) => r.ok)
+    .catch(() => false);
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -14,7 +21,6 @@ export default function LoginPage() {
   const [capsLock, setCapsLock] = useState(false);
   const [done, setDone] = useState(false);
   const [shake, setShake] = useState(false);
-  const [lcd, setLcd] = useState(0);
   const usernameRef = useRef<HTMLInputElement>(null);
 
   // Focus the first field on desktop only; on phones it would pop the keyboard over the page.
@@ -22,18 +28,9 @@ export default function LoginPage() {
     if (window.matchMedia('(pointer: fine)').matches) usernameRef.current?.focus();
   }, []);
 
-  // The decorative meter counts its credit up once, as if a token had just loaded.
+  // Someone who is still signed in skips this page instead of tripping the security check.
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return setLcd(128.4);
-    let frame = 0;
-    const start = performance.now() + 700;
-    const tick = (now: number) => {
-      const t = Math.min(Math.max((now - start) / 1600, 0), 1);
-      setLcd(128.4 * (1 - Math.pow(1 - t, 3)));
-      if (t < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+    alreadySignedIn().then((yes) => yes && window.location.replace('/vend'));
   }, []);
 
   async function submit(e: React.FormEvent) {
@@ -45,6 +42,12 @@ export default function LoginPage() {
       setDone(true);
       window.location.href = '/vend';
     } catch (err) {
+      // Signed in meanwhile (another tab, an old session): just go to the desk.
+      if (err instanceof ApiError && err.code === 'CSRF' && (await alreadySignedIn())) {
+        setDone(true);
+        window.location.href = '/vend';
+        return;
+      }
       setError(errorText(err));
       setBusy(false);
       // Restart the shake even when the same error repeats.
@@ -61,16 +64,8 @@ export default function LoginPage() {
           <span>Token desk</span>
         </div>
         <div className="login-pitch">
-          {/* A quiet nod to the thing on the customer's wall — decorative only. */}
-          <div className="meter-face" aria-hidden="true">
-            <div className="meter-lcd">
-              <div className="r1"><span>CREDIT</span><span>kWh</span></div>
-              <div className="r2">{lcd.toFixed(2).padStart(7, '0')}<small>kWh</small></div>
-            </div>
-            <div className="meter-keys">
-              {Array.from({ length: 12 }, (_, i) => <span key={i} className={i === 11 ? 'on' : ''} />)}
-            </div>
-          </div>
+          <FlowPreview />
+          <p className="flow-caption"><b>Meter, units, token.</b> Three steps, and the customer is back on power.</p>
         </div>
         <div className="login-foot">
           <span>Tronic Kenya · Nairobi</span>
