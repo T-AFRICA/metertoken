@@ -30,7 +30,7 @@ const NAV: { label: string; items: NavItem[] }[] = [
     label: 'Management',
     items: [
       { href: '/admin/reports', label: 'Reports', icon: 'chart', show: (r) => isSupervisor(r) || r === 'auditor' },
-      { href: '/admin/tariffs', label: 'Tariffs', icon: 'tag', show: (r) => r !== 'cashier' },
+      { href: '/admin/tariffs', label: 'Tariffs', icon: 'tag', show: (r) => r !== 'cashier' && r !== 'landlord' },
       { href: '/admin/users', label: 'Users', icon: 'users', show: (r) => r === 'admin' },
       { href: '/admin/audit', label: 'Activity log', icon: 'shield', show: (r) => r === 'admin' || r === 'auditor' },
       { href: '/admin/settings', label: 'Settings', icon: 'settings', show: (r) => r === 'admin' },

@@ -13,11 +13,16 @@ export interface CustomerRow {
   name: string;
   phone: string | null;
   active: boolean;
+  landlord_id: string | null;
+  landlord_name: string | null;
   created_at: Date;
   last_login_at: Date | null;
 }
 
-export const CUSTOMER_SELECT = `SELECT id, meter_no, name, phone, active, created_at, last_login_at FROM customers`;
+/** Columns are qualified with "c." because the landlord join brings its own id and created_at. */
+export const CUSTOMER_SELECT = `SELECT c.id, c.meter_no, c.name, c.phone, c.active, c.landlord_id, l.display_name AS landlord_name,
+       c.created_at, c.last_login_at
+  FROM customers c LEFT JOIN users l ON l.id = c.landlord_id`;
 
 export function customerView(c: CustomerRow) {
   return {
@@ -26,9 +31,20 @@ export function customerView(c: CustomerRow) {
     name: c.name,
     phone: c.phone,
     active: c.active,
+    landlordId: c.landlord_id,
+    landlordName: c.landlord_name,
     createdAt: c.created_at,
     lastLoginAt: c.last_login_at,
   };
+}
+
+export const isLandlord = (u: SessionUser) => u.role === 'landlord';
+
+/** A landlord may only vend to the meters of their own active tenants. */
+export async function assertLandlordMeter(q: Queryable, user: SessionUser, meterNo: string) {
+  if (!isLandlord(user)) return;
+  const own = (await q.query('SELECT 1 FROM customers WHERE meter_no = $1 AND landlord_id = $2 AND active', [meterNo, user.id])).rows[0];
+  if (!own) throw new HttpError(403, 'NOT_YOUR_TENANT', 'This meter is not one of your tenants. Register the tenant first on the Tenants page.');
 }
 
 /** Customer purchases go through createVend as this account; it can never sign in. */

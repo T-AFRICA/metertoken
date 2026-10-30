@@ -13,5 +13,6 @@ export const decimalStringSchema = z
 
 export const currencySchema = z.enum(['KES', 'TZS', 'UGX', 'RWF']);
 
-export const roleSchema = z.enum(['cashier', 'supervisor', 'admin', 'auditor']);
+/** A landlord manages only their own tenants' meters; the other roles are Tronic staff. */
+export const roleSchema = z.enum(['cashier', 'supervisor', 'admin', 'auditor', 'landlord']);
 export type Role = z.infer<typeof roleSchema>;

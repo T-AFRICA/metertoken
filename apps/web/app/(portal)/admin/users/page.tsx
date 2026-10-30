@@ -14,7 +14,7 @@ interface UserRow {
   lastLoginAt: string | null;
 }
 
-const ROLES: Role[] = ['cashier', 'supervisor', 'admin', 'auditor'];
+const ROLES: Role[] = ['landlord', 'cashier', 'supervisor', 'admin', 'auditor'];
 const initialsOf = (name: string) =>
   name
     .split(/\s+/)
@@ -27,7 +27,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ username: '', displayName: '', role: 'cashier' as Role, password: '' });
+  const [form, setForm] = useState({ username: '', displayName: '', role: 'landlord' as Role, password: '' });
 
   const load = () =>
     api<{ items: UserRow[] }>('/api/admin/users')
@@ -51,7 +51,7 @@ export default function UsersPage() {
   async function create(e: React.FormEvent) {
     e.preventDefault();
     await run(() => api('/api/admin/users', { method: 'POST', body: form }));
-    setForm({ username: '', displayName: '', role: 'cashier', password: '' });
+    setForm({ username: '', displayName: '', role: 'landlord', password: '' });
   }
 
   function resetPassword(u: UserRow) {
@@ -64,8 +64,8 @@ export default function UsersPage() {
       <div className="page-head">
         <div>
           <div className="eyebrow">Management</div>
-          <h1>Users</h1>
-          <p className="subtitle">Accounts and roles. Changing a role, status or password signs the user out.</p>
+          <h1>Users and landlords</h1>
+          <p className="subtitle">Landlords and Tronic staff. A landlord signs in on the Landlord tab and sees only their own tenants. Changing a role, status or password signs the user out.</p>
         </div>
       </div>
       {error && <div className="alert error">{error}</div>}
@@ -105,7 +105,7 @@ export default function UsersPage() {
       </div>
 
       <form className="card" onSubmit={create}>
-        <h2 style={{ marginTop: 0 }}>Add user</h2>
+        <h2 style={{ marginTop: 0 }}>Add a landlord or staff member</h2>
         <div className="row">
           <div className="field"><label>Username</label><input value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required /></div>
           <div className="field"><label>Full name</label><input value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} required /></div>

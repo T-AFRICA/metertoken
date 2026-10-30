@@ -23,11 +23,22 @@ interface CustomerRecord {
   items: TokenRow[];
 }
 
-const EMPTY_FORM = { meterNo: '', name: '', phone: '', pin: '' };
+const EMPTY_FORM = { meterNo: '', name: '', phone: '', pin: '', landlordId: '' };
+
+interface Landlord {
+  id: string;
+  displayName: string;
+  username: string;
+  active: boolean;
+  tenants: number;
+}
 
 export default function CustomersPage() {
   const me = useSession();
-  const manage = isSupervisor(me.user.role);
+  const landlord = me.user.role === 'landlord';
+  // Landlords manage their own tenants; supervisors and admins manage everyone's.
+  const manage = isSupervisor(me.user.role) || landlord;
+  const [landlords, setLandlords] = useState<Landlord[]>([]);
   const [items, setItems] = useState<Customer[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [search, setSearch] = useState('');
@@ -55,6 +66,11 @@ export default function CustomersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
+  // Staff pick which landlord a tenant belongs to.
+  useEffect(() => {
+    if (!landlord) api<{ items: Landlord[] }>('/api/landlords').then((r) => setLandlords(r.items)).catch(() => undefined);
+  }, [landlord]);
+
   useEffect(() => {
     setRecord(null);
     setNewPin('');
@@ -81,7 +97,7 @@ export default function CustomersPage() {
 
   async function register(e: React.FormEvent) {
     e.preventDefault();
-    const ok = await run(() => api('/api/customers', { method: 'POST', body: { ...form, phone: form.phone || undefined } }), `${form.name} can now generate tokens with meter ${groupMeter(form.meterNo)} and their PIN.`);
+    const ok = await run(() => api('/api/customers', { method: 'POST', body: { ...form, phone: form.phone || undefined, landlordId: form.landlordId || undefined } }), `${form.name} can now generate tokens with meter ${groupMeter(form.meterNo)} and their PIN.`);
     if (ok) {
       setForm(EMPTY_FORM);
       setShowForm(false);
@@ -94,6 +110,12 @@ export default function CustomersPage() {
     if (await run(() => api(`/api/customers/${selected.id}`, { method: 'PATCH', body: { pin: newPin } }), 'PIN changed. The tenant was signed out everywhere.')) setNewPin('');
   }
 
+  const moveTo = (c: Customer, landlordId: string) =>
+    run(
+      () => api(`/api/customers/${c.id}`, { method: 'PATCH', body: { landlordId: landlordId || null } }),
+      landlordId ? `${c.name} now belongs to ${landlords.find((l) => l.id === landlordId)?.displayName}.` : `${c.name} is no longer linked to a landlord.`,
+    );
+
   const toggleActive = (c: Customer) =>
     run(() => api(`/api/customers/${c.id}`, { method: 'PATCH', body: { active: !c.active } }), c.active ? 'Tenant deactivated and signed out.' : 'Tenant reactivated.');
 
@@ -103,7 +125,11 @@ export default function CustomersPage() {
         <div>
           <div className="eyebrow">Vending</div>
           <h1>Tenants</h1>
-          <p className="subtitle">Registered tenants generate their own tokens with their meter number and PIN, and pay their landlord.</p>
+          <p className="subtitle">
+            {landlord
+              ? 'Your tenants generate their own tokens with their meter number and PIN, and pay you.'
+              : 'Registered tenants generate their own tokens with their meter number and PIN, and pay their landlord.'}
+          </p>
         </div>
         {manage && (
           <button className="ink" onClick={() => setShowForm((v) => !v)}>
@@ -123,6 +149,15 @@ export default function CustomersPage() {
             <div className="field"><label>Tenant name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
             <div className="field"><label>Phone (optional)</label><input inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
             <div className="field"><label>PIN (4–6 digits)</label><input inputMode="numeric" maxLength={6} value={form.pin} onChange={(e) => setForm({ ...form, pin: e.target.value.replace(/\D/g, '') })} required /></div>
+            {!landlord && (
+              <div className="field">
+                <label>Landlord</label>
+                <select value={form.landlordId} onChange={(e) => setForm({ ...form, landlordId: e.target.value })}>
+                  <option value="">None (Tronic)</option>
+                  {landlords.filter((l) => l.active).map((l) => <option key={l.id} value={l.id}>{l.displayName}</option>)}
+                </select>
+              </div>
+            )}
           </div>
           <p className="hint">Tell the tenant their PIN privately. They sign in at <b>/token</b> (or on the sign-in page) with their meter number and this PIN.</p>
           <button className="primary" disabled={busy}><Icon name="check" size={16} /> Register</button>
@@ -132,7 +167,7 @@ export default function CustomersPage() {
       <div className="cust-layout">
         <div className="card flush">
           <div className="card-head">
-            <h2>All tenants</h2>
+            <h2>{landlord ? 'Your tenants' : 'All tenants'}</h2>
             <div className="input-icon cust-search">
               <Icon name="search" size={16} />
               <input placeholder="Meter, name or phone" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -141,7 +176,7 @@ export default function CustomersPage() {
           <div className="table-wrap">
             <table className="stack">
               <thead>
-                <tr><th>Meter</th><th>Name</th><th>Phone</th><th>Status</th></tr>
+                <tr><th>Meter</th><th>Name</th><th>{landlord ? 'Phone' : 'Landlord'}</th><th>Status</th></tr>
               </thead>
               <tbody>
                 {!loaded && <SkeletonRows cols={4} rows={3} />}
@@ -149,7 +184,11 @@ export default function CustomersPage() {
                   <tr key={c.id} className={`clickable ${selected?.id === c.id ? 'picked' : ''}`} onClick={() => setSelected(c)}>
                     <td className="mono" data-label="Meter">{groupMeter(c.meterNo)}</td>
                     <td data-label="Name">{c.name}</td>
-                    <td data-label="Phone">{c.phone ?? '—'}</td>
+                    {landlord ? (
+                      <td data-label="Phone">{c.phone ?? '—'}</td>
+                    ) : (
+                      <td data-label="Landlord">{c.landlordName ?? <span className="muted">Tronic</span>}</td>
+                    )}
                     <td data-label="Status"><span className={`badge ${c.active ? 'SUCCEEDED' : 'FAILED'}`}>{c.active ? 'Active' : 'Inactive'}</span></td>
                   </tr>
                 ))}
@@ -172,6 +211,7 @@ export default function CustomersPage() {
                 <div>
                   <h2>{selected.name}</h2>
                   <span className="mono">{groupMeter(selected.meterNo)}{selected.phone ? ` · ${selected.phone}` : ''}</span>
+                  {!landlord && <span className="cust-landlord"><Icon name="user" size={13} /> {selected.landlordName ?? 'No landlord (Tronic)'}</span>}
                 </div>
                 <span className={`badge ${selected.active ? 'SUCCEEDED' : 'FAILED'}`}>{selected.active ? 'Active' : 'Inactive'}</span>
               </div>
@@ -191,6 +231,12 @@ export default function CustomersPage() {
                     <input inputMode="numeric" maxLength={6} placeholder="New PIN" aria-label="New PIN, 4 to 6 digits" value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))} />
                     <button disabled={busy || newPin.length < 4}>Reset PIN</button>
                   </form>
+                  {!landlord && (
+                    <select className="cust-move" aria-label="Landlord" value={selected.landlordId ?? ''} onChange={(e) => moveTo(selected, e.target.value)} disabled={busy}>
+                      <option value="">No landlord (Tronic)</option>
+                      {landlords.filter((l) => l.active || l.id === selected.landlordId).map((l) => <option key={l.id} value={l.id}>Landlord: {l.displayName}</option>)}
+                    </select>
+                  )}
                   <button className={selected.active ? 'danger-quiet' : ''} onClick={() => toggleActive(selected)} disabled={busy}>
                     {selected.active ? 'Deactivate' : 'Reactivate'}
                   </button>

@@ -51,7 +51,7 @@ export async function loadVend(q: Queryable, id: string): Promise<VendRow | null
 
 export function canSeeToken(user: SessionUser, v: Pick<VendRow, 'user_id' | 'created_at'>): boolean {
   if (isSupervisor(user)) return true;
-  return user.role === 'cashier' && v.user_id === user.id && Date.now() - new Date(v.created_at).getTime() < TOKEN_VISIBLE_TO_OWNER_MS;
+  return (user.role === 'cashier' || user.role === 'landlord') && v.user_id === user.id && Date.now() - new Date(v.created_at).getTime() < TOKEN_VISIBLE_TO_OWNER_MS;
 }
 
 export const formatAmount = (amount: string, currency: string) =>

@@ -1,4 +1,4 @@
-export type Role = 'cashier' | 'supervisor' | 'admin' | 'auditor';
+export type Role = 'cashier' | 'supervisor' | 'admin' | 'auditor' | 'landlord';
 export type VendStatus = 'PENDING' | 'SUBMITTED' | 'SUCCEEDED' | 'FAILED' | 'UNKNOWN' | 'MANUAL_REVIEW';
 
 export interface User {
@@ -60,6 +60,8 @@ export interface Customer {
   name: string;
   phone: string | null;
   active: boolean;
+  landlordId: string | null;
+  landlordName: string | null;
   createdAt: string;
   lastLoginAt: string | null;
 }

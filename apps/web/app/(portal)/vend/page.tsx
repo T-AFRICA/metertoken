@@ -8,7 +8,7 @@ import { Icon } from '@/components/Icon';
 import { Receipt } from '@/components/Receipt';
 import { Stat, type Bar } from '@/components/Stat';
 import { api, ApiError, errorText } from '@/lib/api';
-import { formatToken, isSupervisor, statusLabel, type Quote, type Vend, type VendStatus } from '@/lib/types';
+import { formatToken, groupMeter, isSupervisor, statusLabel, type Customer, type Quote, type Vend, type VendStatus } from '@/lib/types';
 import { useSession } from '../session';
 
 type Mode = 'units' | 'amount';
@@ -37,6 +37,12 @@ function greeting() {
 export default function VendPage() {
   const me = useSession();
   const [meterNo, setMeterNo] = useState('');
+  // A landlord picks from their own tenants instead of typing the meter.
+  const [tenants, setTenants] = useState<Customer[]>([]);
+  useEffect(() => {
+    if (me.user.role !== 'landlord') return;
+    api<{ items: Customer[] }>('/api/customers').then((r) => setTenants(r.items.filter((c) => c.active))).catch(() => undefined);
+  }, [me.user.role]);
   const [meter, setMeter] = useState<{ valid: boolean; customerName?: string } | null>(null);
   const [meterError, setMeterError] = useState('');
   const [verifying, setVerifying] = useState(false);
@@ -307,6 +313,16 @@ export default function VendPage() {
                     <Icon name="search" size={16} /> {verifying ? 'Checking…' : 'Verify'}
                   </button>
                 </div>
+                {tenants.length > 0 && !meter?.valid && (
+                  <div className="tenant-picks" aria-label="Your tenants">
+                    {tenants.slice(0, 8).map((t) => (
+                      <button key={t.id} type="button" className={meterNo === t.meterNo ? 'on' : ''} onClick={() => { setMeterNo(t.meterNo); setMeter(null); }}>
+                        <b>{t.name}</b>
+                        <span>{groupMeter(t.meterNo)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {meterError && <div className="alert error"><Icon name="alert" size={16} /> {meterError}</div>}
                 {meter?.valid && (
                   <div className="alert ok">

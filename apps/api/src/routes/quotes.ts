@@ -4,9 +4,10 @@ import { z } from 'zod';
 import { audit } from '../audit';
 import type { AppContext } from '../context';
 import { requireRole, requireUser } from '../http';
+import { assertLandlordMeter } from '../services/customers';
 import { createQuoteService } from '../services/quotes';
 
-const VEND_ROLES = ['cashier', 'supervisor', 'admin'] as const;
+const VEND_ROLES = ['cashier', 'supervisor', 'admin', 'landlord'] as const;
 
 export function quoteRoutes(app: FastifyInstance, ctx: AppContext) {
   const quotes = createQuoteService(ctx);
@@ -14,6 +15,7 @@ export function quoteRoutes(app: FastifyInstance, ctx: AppContext) {
   app.post('/api/meters/verify', { preHandler: requireRole(...VEND_ROLES) }, async (req) => {
     const user = requireUser(req);
     const { meterNo } = z.object({ meterNo: meterNoSchema }).parse(req.body);
+    await assertLandlordMeter(ctx.db, user, meterNo);
     try {
       const result = await quotes.verifyMeter(meterNo);
       await audit(ctx.db, { actorId: user.id, action: 'meter.verify', entity: 'meter', entityId: meterNo, detail: { valid: true } });
@@ -29,6 +31,7 @@ export function quoteRoutes(app: FastifyInstance, ctx: AppContext) {
     const body = z
       .object({ meterNo: meterNoSchema, mode: z.enum(['units', 'amount']), value: decimalStringSchema })
       .parse(req.body);
+    await assertLandlordMeter(ctx.db, user, body.meterNo);
     return quotes.createQuote(user.id, body.meterNo, body.mode, body.value);
   });
 }

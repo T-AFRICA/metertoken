@@ -64,7 +64,7 @@ export function customerRoutes(app: FastifyInstance, ctx: AppContext) {
     }
   });
 
-  const loadCustomer = async (id: string) => (await ctx.db.query<CustomerRow>(`${CUSTOMER_SELECT} WHERE id = $1`, [id])).rows[0]!;
+  const loadCustomer = async (id: string) => (await ctx.db.query<CustomerRow>(`${CUSTOMER_SELECT} WHERE c.id = $1`, [id])).rows[0]!;
 
   app.post('/api/customer/login', async (req, reply) => {
     const body = z.object({ meterNo: meterNoSchema, pin: pinSchema }).parse(req.body);

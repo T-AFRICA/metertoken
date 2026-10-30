@@ -299,3 +299,69 @@ describe('customer self-service', () => {
     await customerLogin('55555555555', '987654');
   });
 });
+
+describe('landlords', () => {
+  let landlordA: Session;
+  let landlordB: Session;
+
+  beforeAll(async () => {
+    for (const name of ['landlordA', 'landlordB']) {
+      const r = await call(admin, 'POST', '/api/admin/users', { username: name, displayName: name, role: 'landlord', password: `${name}-password` });
+      expect(r.statusCode, r.body).toBe(200);
+    }
+    landlordA = await login('landlordA', 'landlordA-password');
+    landlordB = await login('landlordB', 'landlordB-password');
+  });
+
+  it('registers tenants under the landlord and hides them from other landlords', async () => {
+    const r = await call(landlordA, 'POST', '/api/customers', { meterNo: '66666661111', name: 'Tenant of A', pin: '1357' });
+    expect(r.statusCode, r.body).toBe(200);
+    const id = r.json().id;
+
+    const mine = (await call(landlordA, 'GET', '/api/customers')).json().items;
+    expect(mine.map((c: { id: string }) => c.id)).toEqual([id]);
+    expect(mine[0].landlordName).toBe('landlordA');
+    expect((await call(landlordB, 'GET', '/api/customers')).json().items).toHaveLength(0);
+    expect((await call(landlordB, 'GET', `/api/customers/${id}/vends`)).statusCode).toBe(404);
+    expect((await call(landlordB, 'PATCH', `/api/customers/${id}`, { pin: '2468' })).statusCode).toBe(404);
+    // Staff still see every tenant.
+    expect((await call(supervisor, 'GET', '/api/customers?q=66666661111')).json().items).toHaveLength(1);
+  });
+
+  it('lets a landlord vend only to their own tenants', async () => {
+    const ok = await call(landlordA, 'POST', '/api/quotes', { meterNo: '66666661111', mode: 'units', value: '2' });
+    expect(ok.statusCode, ok.body).toBe(200);
+    const v = await vend(landlordA, ok.json().quoteId);
+    expect(v.json().status).toBe('SUCCEEDED');
+    expect(v.json().tokens[0]).toMatch(/^MOCK /);
+
+    const other = await call(landlordA, 'POST', '/api/quotes', { meterNo: '01234567890', mode: 'units', value: '2' });
+    expect(other.statusCode).toBe(403);
+    expect(other.json().error).toBe('NOT_YOUR_TENANT');
+
+    // Each landlord's transaction list holds only their own tenants' tokens.
+    expect((await call(landlordA, 'GET', '/api/vends')).json().items.map((i: { meterNo: string }) => i.meterNo)).toEqual(['66666661111']);
+    expect((await call(landlordB, 'GET', '/api/vends')).json().items).toHaveLength(0);
+    expect((await call(landlordB, 'GET', `/api/vends/${v.json().id}`)).statusCode).toBe(403);
+  });
+
+  it('keeps landlords out of staff-only pages', async () => {
+    expect((await call(landlordA, 'GET', '/api/admin/users')).statusCode).toBe(403);
+    expect((await call(landlordA, 'GET', '/api/admin/reports/summary?from=2026-01-01&to=2026-12-31')).statusCode).toBe(403);
+    expect((await call(landlordA, 'GET', '/api/admin/audit')).statusCode).toBe(403);
+    expect((await call(landlordA, 'GET', '/api/landlords')).statusCode).toBe(403);
+  });
+
+  it('lets staff assign a tenant to a landlord, and only to a real landlord', async () => {
+    const landlords = (await call(admin, 'GET', '/api/landlords')).json().items;
+    const b = landlords.find((l: { username: string }) => l.username === 'landlordB');
+    const r = await call(admin, 'POST', '/api/customers', { meterNo: '66666662222', name: 'Tenant of B', pin: '1357', landlordId: b.id });
+    expect(r.statusCode, r.body).toBe(200);
+    expect((await call(landlordB, 'GET', '/api/customers')).json().items).toHaveLength(1);
+    const cashierId = (await call(admin, 'GET', '/api/admin/users')).json().items.find((u: { username: string }) => u.username === 'cash1').id;
+    const bad = await call(admin, 'POST', '/api/customers', { meterNo: '66666663333', name: 'X', pin: '1357', landlordId: cashierId });
+    expect(bad.json().error).toBe('INVALID_LANDLORD');
+    // A landlord cannot move tenants between landlords.
+    expect((await call(landlordB, 'PATCH', `/api/customers/${r.json().id}`, { landlordId: null })).statusCode).toBe(403);
+  });
+});

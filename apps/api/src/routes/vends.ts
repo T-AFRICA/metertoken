@@ -5,7 +5,7 @@ import type { AppContext } from '../context';
 import { HttpError, isSupervisor, requireRole, requireUser } from '../http';
 import { canSeeToken, checkVendStatus, createVend, formatAmount, loadVend, resolveVend, vendView } from '../services/vends';
 
-const VEND_ROLES = ['cashier', 'supervisor', 'admin'] as const;
+const VEND_ROLES = ['cashier', 'supervisor', 'admin', 'landlord'] as const;
 const uuid = z.string().uuid();
 
 export function vendRoutes(app: FastifyInstance, ctx: AppContext) {
@@ -24,6 +24,10 @@ export function vendRoutes(app: FastifyInstance, ctx: AppContext) {
     const v = await loadVend(ctx.db, id);
     if (!v) throw new HttpError(404, 'NOT_FOUND', 'Vend not found');
     if (user.role === 'cashier' && v.user_id !== user.id) throw new HttpError(403, 'FORBIDDEN', 'Not your transaction');
+    if (user.role === 'landlord' && v.user_id !== user.id) {
+      const own = v.customer_id && (await ctx.db.query('SELECT 1 FROM customers WHERE id = $1 AND landlord_id = $2', [v.customer_id, user.id])).rows[0];
+      if (!own) throw new HttpError(403, 'FORBIDDEN', 'Not one of your tenants');
+    }
     const withTokens = canSeeToken(user, v) && Boolean(v.token_enc);
     if (withTokens) await audit(ctx.db, { actorId: user.id, action: 'vend.token_viewed', entity: 'vend', entityId: id });
     return vendView(ctx, v, { withTokens });
@@ -49,6 +53,11 @@ export function vendRoutes(app: FastifyInstance, ctx: AppContext) {
       where.push(sql.replace('?', `$${params.length}`));
     };
     if (user.role === 'cashier') add('v.user_id = ?', user.id);
+    // A landlord sees the tokens they sold and the ones their tenants generated.
+    if (user.role === 'landlord') {
+      params.push(user.id);
+      where.push(`(v.user_id = $${params.length} OR v.customer_id IN (SELECT id FROM customers WHERE landlord_id = $${params.length}))`);
+    }
     if (f.status) add('v.status = ?', f.status);
     if (f.meterNo) add('v.meter_no = ?', f.meterNo);
     if (f.from) add('v.created_at >= ?::date', f.from);
