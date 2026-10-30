@@ -1,0 +1,20 @@
+{
+  "name": "tronic-sts-portal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w @tronic/api",
+    "dev:web": "npm run dev -w @tronic/web",
+    "test": "npm test -w @tronic/core && npm test -w @tronic/api",
+    "typecheck": "npm run typecheck -w @tronic/core && npm run typecheck -w @tronic/api && npm run typecheck -w @tronic/web",
+    "build:web": "npm run build -w @tronic/web"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

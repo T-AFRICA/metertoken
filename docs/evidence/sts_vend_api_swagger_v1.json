@@ -1,0 +1,1104 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "STS Vend System API",
+    "description": "The API for STS vend system",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/Kmf/ListSgcByMeterType": {
+      "get": {
+        "tags": [
+          "Kmf"
+        ],
+        "summary": "List SGC by meter type",
+        "parameters": [
+          {
+            "name": "meterType",
+            "in": "query",
+            "description": "meter type(1-electric|2-water)",
+            "required": true,
+            "schema": {
+              "pattern": "^[12]$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/GetChangeDecoderToken": {
+      "get": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Get the token of change decoder key",
+        "parameters": [
+          {
+            "name": "MeterCode",
+            "in": "query",
+            "description": "The meter code",
+            "required": true,
+            "schema": {
+              "maxLength": 13,
+              "type": "string"
+            }
+          },
+          {
+            "name": "MeterType",
+            "in": "query",
+            "description": "The meter type (1-Electric | 2-Water)",
+            "required": true,
+            "schema": {
+              "pattern": "^[12]$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "SgcId",
+            "in": "query",
+            "description": "The new SGC ID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "UserId",
+            "in": "query",
+            "description": "The user id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "description": "The password",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/GetClearCreditToken": {
+      "get": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Get the token of clear credit",
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "query",
+            "description": "The user id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "description": "The password",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MeterCode",
+            "in": "query",
+            "description": "The meter code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MeterType",
+            "in": "query",
+            "description": "The meter type (1-Electric | 2-Water)",
+            "required": true,
+            "schema": {
+              "pattern": "^[12]$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/GetClearTamperSignToken": {
+      "get": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Get the token of clear tamper sign",
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "query",
+            "description": "The user id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "description": "The password",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MeterCode",
+            "in": "query",
+            "description": "The meter code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MeterType",
+            "in": "query",
+            "description": "The meter type (1-Electric | 2-Water)",
+            "required": true,
+            "schema": {
+              "pattern": "^[12]$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/GetContractInfo": {
+      "get": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Get the contract information of the meter",
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "query",
+            "description": "The user id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "description": "The password",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MeterType",
+            "in": "query",
+            "description": "The meter type \r\n1-electric 2-water",
+            "required": true,
+            "schema": {
+              "pattern": "^[12]$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "MeterCode",
+            "in": "query",
+            "description": "The meter code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/GetMaxPowerToken": {
+      "get": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Get the token of set max power",
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "query",
+            "description": "The user id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "description": "The password",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MeterCode",
+            "in": "query",
+            "description": "The meter code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Power",
+            "in": "query",
+            "description": "The max power(Unit:W)",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/GetVendingToken": {
+      "get": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Get the token of recharge",
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "query",
+            "description": "The user id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Password",
+            "in": "query",
+            "description": "The password",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "MeterType",
+            "in": "query",
+            "description": "The meter type \r\n1-electric 2-water",
+            "required": true,
+            "schema": {
+              "pattern": "^[12]$",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "MeterCode",
+            "in": "query",
+            "description": "The meter code",
+            "required": true,
+            "schema": {
+              "maxLength": 13,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "AmountOrQuantity",
+            "in": "query",
+            "description": "The recharge amount or quantity is determined by the VendingType",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "VendingType",
+            "in": "query",
+            "description": "The type of vending\r\n0-amount | 1-quantity",
+            "required": true,
+            "schema": {
+              "pattern": "^[01]$",
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/MeterDelete": {
+      "post": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Delete the meter",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "MeterCode",
+                  "MeterType",
+                  "Password",
+                  "UserId"
+                ],
+                "type": "object",
+                "properties": {
+                  "UserId": {
+                    "type": "string",
+                    "description": "The user id"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "description": "The password"
+                  },
+                  "MeterCode": {
+                    "type": "string",
+                    "description": "The meter code"
+                  },
+                  "MeterType": {
+                    "pattern": "^[12]$",
+                    "type": "integer",
+                    "description": "The meter type (1-Electric | 2-Water)",
+                    "format": "int32"
+                  }
+                }
+              },
+              "encoding": {
+                "UserId": {
+                  "style": "form"
+                },
+                "Password": {
+                  "style": "form"
+                },
+                "MeterCode": {
+                  "style": "form"
+                },
+                "MeterType": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/MeterRegister": {
+      "post": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Register the meter",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "CustomerName",
+                  "MeterCode",
+                  "MeterType",
+                  "Password",
+                  "UserId",
+                  "UseTypeId"
+                ],
+                "type": "object",
+                "properties": {
+                  "UserId": {
+                    "type": "string",
+                    "description": "The user id"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "description": "The password"
+                  },
+                  "UseTypeId": {
+                    "type": "string",
+                    "description": "The use type id"
+                  },
+                  "MeterCode": {
+                    "pattern": "^(\\d{1,13},){0,19}\\d{1,13}$",
+                    "type": "string",
+                    "description": "The meter codes(Supports registering up to 20 meter codes simultaneously. If there are multiple, separate them with commas in English)",
+                    "example": "123 or 123,456,789..."
+                  },
+                  "MeterType": {
+                    "pattern": "^[12]$",
+                    "type": "integer",
+                    "description": "The meter type\r\n1-electric 2-water",
+                    "format": "int32",
+                    "example": 1
+                  },
+                  "CustomerName": {
+                    "maxLength": 20,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The customer name"
+                  },
+                  "Address": {
+                    "maxLength": 50,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The address"
+                  },
+                  "PhoneNumber": {
+                    "maxLength": 20,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The phone number"
+                  },
+                  "Fax": {
+                    "maxLength": 20,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The fax"
+                  },
+                  "SgcId": {
+                    "maxLength": 6,
+                    "minLength": 6,
+                    "type": "string",
+                    "description": "sgc id"
+                  },
+                  "BillingMode": {
+                    "type": "integer",
+                    "description": "The billing mode(0-Quantity | 1-Amount)",
+                    "format": "int32"
+                  }
+                }
+              },
+              "encoding": {
+                "UserId": {
+                  "style": "form"
+                },
+                "Password": {
+                  "style": "form"
+                },
+                "UseTypeId": {
+                  "style": "form"
+                },
+                "MeterCode": {
+                  "style": "form"
+                },
+                "MeterType": {
+                  "style": "form"
+                },
+                "CustomerName": {
+                  "style": "form"
+                },
+                "Address": {
+                  "style": "form"
+                },
+                "PhoneNumber": {
+                  "style": "form"
+                },
+                "Fax": {
+                  "style": "form"
+                },
+                "SgcId": {
+                  "style": "form"
+                },
+                "BillingMode": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Power/MeterUpdate": {
+      "post": {
+        "tags": [
+          "Power"
+        ],
+        "summary": "Update the meter",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "CustomerName",
+                  "MeterCode",
+                  "MeterType",
+                  "Password",
+                  "UserId"
+                ],
+                "type": "object",
+                "properties": {
+                  "UserId": {
+                    "type": "string",
+                    "description": "The user id"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "description": "The password"
+                  },
+                  "MeterCode": {
+                    "maxLength": 13,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The meter code"
+                  },
+                  "MeterType": {
+                    "pattern": "^[12]$",
+                    "type": "integer",
+                    "description": "The meter type\r\n1-electric 2-water",
+                    "format": "int32",
+                    "example": 1
+                  },
+                  "CustomerName": {
+                    "maxLength": 20,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The customer name"
+                  },
+                  "Address": {
+                    "maxLength": 50,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The address"
+                  },
+                  "PhoneNumber": {
+                    "maxLength": 20,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The phone number"
+                  },
+                  "UseTypeId": {
+                    "maxLength": 32,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The use type id"
+                  },
+                  "SgcId": {
+                    "maxLength": 6,
+                    "minLength": 6,
+                    "type": "string",
+                    "description": "The sgc id"
+                  },
+                  "BillingMode": {
+                    "type": "integer",
+                    "description": "The billing mode(0-Quantity | 1-Amount)",
+                    "format": "int32"
+                  }
+                }
+              },
+              "encoding": {
+                "UserId": {
+                  "style": "form"
+                },
+                "Password": {
+                  "style": "form"
+                },
+                "MeterCode": {
+                  "style": "form"
+                },
+                "MeterType": {
+                  "style": "form"
+                },
+                "CustomerName": {
+                  "style": "form"
+                },
+                "Address": {
+                  "style": "form"
+                },
+                "PhoneNumber": {
+                  "style": "form"
+                },
+                "UseTypeId": {
+                  "style": "form"
+                },
+                "SgcId": {
+                  "style": "form"
+                },
+                "BillingMode": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/UseType/AddUseType": {
+      "post": {
+        "tags": [
+          "UseType"
+        ],
+        "summary": "Add the use type",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "MeterType",
+                  "Password",
+                  "Price",
+                  "UserId",
+                  "UseTypeId",
+                  "UseTypeName",
+                  "Vat"
+                ],
+                "type": "object",
+                "properties": {
+                  "UserId": {
+                    "type": "string",
+                    "description": "The user id"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "description": "The password"
+                  },
+                  "UseTypeId": {
+                    "maxLength": 10,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The id of use type"
+                  },
+                  "UseTypeName": {
+                    "maxLength": 20,
+                    "minLength": 0,
+                    "type": "string",
+                    "description": "The name of use type"
+                  },
+                  "MeterType": {
+                    "pattern": "^[12]$",
+                    "type": "integer",
+                    "description": "The meter type \r\n1-electric 2-water",
+                    "format": "int32"
+                  },
+                  "Price": {
+                    "maximum": 999999999999999.999,
+                    "minimum": 0,
+                    "type": "number",
+                    "description": "The unit-price",
+                    "format": "double"
+                  },
+                  "Vat": {
+                    "maximum": 999999999999999.999,
+                    "minimum": 0,
+                    "type": "number",
+                    "description": "The tariff",
+                    "format": "double"
+                  }
+                }
+              },
+              "encoding": {
+                "UserId": {
+                  "style": "form"
+                },
+                "Password": {
+                  "style": "form"
+                },
+                "UseTypeId": {
+                  "style": "form"
+                },
+                "UseTypeName": {
+                  "style": "form"
+                },
+                "MeterType": {
+                  "style": "form"
+                },
+                "Price": {
+                  "style": "form"
+                },
+                "Vat": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/UseType/DeleteUseType": {
+      "post": {
+        "tags": [
+          "UseType"
+        ],
+        "summary": "Delete the use type",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "Password",
+                  "UserId",
+                  "UseTypeId"
+                ],
+                "type": "object",
+                "properties": {
+                  "UserId": {
+                    "type": "string",
+                    "description": "The user id"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "description": "The password"
+                  },
+                  "UseTypeId": {
+                    "type": "string",
+                    "description": "The id of use type"
+                  }
+                }
+              },
+              "encoding": {
+                "UserId": {
+                  "style": "form"
+                },
+                "Password": {
+                  "style": "form"
+                },
+                "UseTypeId": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/UseType/UpdateUseType": {
+      "post": {
+        "tags": [
+          "UseType"
+        ],
+        "summary": "Update the use type",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "Password",
+                  "Price",
+                  "UserId",
+                  "UseTypeId",
+                  "Vat"
+                ],
+                "type": "object",
+                "properties": {
+                  "UserId": {
+                    "type": "string",
+                    "description": "The user id"
+                  },
+                  "Password": {
+                    "type": "string",
+                    "description": "The password"
+                  },
+                  "UseTypeId": {
+                    "type": "string",
+                    "description": "The id of use type"
+                  },
+                  "Price": {
+                    "type": "number",
+                    "description": "The unit-price",
+                    "format": "double"
+                  },
+                  "Vat": {
+                    "type": "number",
+                    "description": "The tariff",
+                    "format": "double"
+                  }
+                }
+              },
+              "encoding": {
+                "UserId": {
+                  "style": "form"
+                },
+                "Password": {
+                  "style": "form"
+                },
+                "UseTypeId": {
+                  "style": "form"
+                },
+                "Price": {
+                  "style": "form"
+                },
+                "Vat": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/UseType/UseTypeList": {
+      "get": {
+        "tags": [
+          "UseType"
+        ],
+        "summary": "Get the use type list",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "description": "The user id",
+            "required": true,
+            "schema": {
+              "maxLength": 10,
+              "minLength": 0,
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "description": "The password",
+            "required": true,
+            "schema": {
+              "maxLength": 20,
+              "minLength": 0,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/WaterVend/PageVend": {
+      "post": {
+        "tags": [
+          "WaterVend"
+        ],
+        "summary": "Page by page query of water vend records",
+        "parameters": [
+          {
+            "name": "PageNumber",
+            "in": "query",
+            "description": "The page number (start by 1)",
+            "schema": {
+              "maximum": 2147483647,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "description": "The page size (number of records per page)",
+            "schema": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The water vend query dto",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaterVendDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaterVendDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaterVendDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RichResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RichResult"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RichResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RichResult": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "data": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "WaterVendDTO": {
+        "required": [
+          "endDate",
+          "meterCode",
+          "password",
+          "startDate",
+          "userId"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "maxLength": 10,
+            "minLength": 1,
+            "type": "string",
+            "description": "The user id"
+          },
+          "password": {
+            "maxLength": 20,
+            "minLength": 1,
+            "type": "string",
+            "description": "The password"
+          },
+          "meterCode": {
+            "maxLength": 13,
+            "minLength": 1,
+            "type": "string",
+            "description": "The meter code"
+          },
+          "startDate": {
+            "type": "string",
+            "description": "The start date of the purchase (format: yyyy-MM-dd, e.g., 2023-08-24)",
+            "format": "date"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "The end date of the purchase (format: yyyy-MM-dd, e.g., 2023-08-24)",
+            "format": "date"
+          }
+        },
+        "additionalProperties": false,
+        "description": "The dto for water vend query"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Kmf",
+      "description": "KMF management"
+    },
+    {
+      "name": "Power",
+      "description": "Recharge meter management"
+    },
+    {
+      "name": "UseType",
+      "description": "Use type management"
+    },
+    {
+      "name": "WaterVend",
+      "description": "The water vend controller"
+    }
+  ]
+}
