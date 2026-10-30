@@ -61,10 +61,6 @@ export default function LoginPage() {
           <span>Token desk</span>
         </div>
         <div className="login-pitch">
-          <h2>
-            Keeping the lights on, <em>one token</em> at a time.
-          </h2>
-          <p>For Tronic agents and cashiers selling prepaid electricity at the counter.</p>
           {/* A quiet nod to the thing on the customer's wall — decorative only. */}
           <div className="meter-face" aria-hidden="true">
             <div className="meter-lcd">
@@ -86,9 +82,11 @@ export default function LoginPage() {
 
       <section className="login-form-wrap">
         <form className={`login-card ${shake ? 'shake' : ''}`} onSubmit={submit} onAnimationEnd={(e) => e.animationName === 'shake' && setShake(false)}>
-          <div className="eyebrow">Welcome back</div>
-          <h1>Sign in</h1>
-          <p className="subtitle">Use the username and password your supervisor set up for you.</p>
+          <div className="login-head">
+            <span className="login-badge" aria-hidden="true"><Icon name="bolt" size={24} /></span>
+            <h1>Welcome back</h1>
+            <p className="subtitle">Sign in with the details your supervisor gave you.</p>
+          </div>
           <div className="field">
             <label htmlFor="username">Username</label>
             <div className="input-icon">

@@ -434,11 +434,8 @@ td.nowrap, .nowrap { white-space: nowrap; }
 .login-brand .wordmark { padding: 0; }
 .login-brand .wordmark img { width: 190px; }
 .login-brand .wordmark span { color: rgba(255, 255, 255, 0.7); }
-.login-brand h2 { font-family: var(--display); font-weight: 800; font-size: 2.9rem; line-height: 1.08; letter-spacing: -0.03em; color: #fff; margin: 0 0 1.25rem; max-width: 13ch; text-wrap: balance; }
-.login-brand h2 em { color: #fff; font-style: normal; background: var(--ink); padding: 0 0.18em; border-radius: 8px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-.login-brand p { color: rgba(255, 255, 255, 0.8); max-width: 40ch; margin: 0; font-size: 1rem; }
 .meter-face {
-  margin-top: 2.5rem; max-width: 340px; border-radius: 14px; padding: 1rem 1rem 0.9rem;
+  max-width: 340px; border-radius: 14px; padding: 1rem 1rem 0.9rem;
   background: #2a2723; border: 1px solid #3a3631; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
 }
 .meter-lcd {
@@ -460,6 +457,17 @@ td.nowrap, .nowrap { white-space: nowrap; }
 .login-card h1 { font-size: 2.1rem; margin-bottom: 0.45rem; }
 .login-card .subtitle { margin-bottom: 1.75rem; }
 .login-card .field { margin-bottom: 1.1rem; }
+/* Heading: a lit red badge, a confident title, one calm line. */
+.login-head { text-align: center; margin-bottom: 1.9rem; }
+.login-badge {
+  width: 56px; height: 56px; margin: 0 auto 1.15rem; display: grid; place-items: center; border-radius: 17px; color: #fff;
+  background: linear-gradient(180deg, #e8262f 0%, #b5111a 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 0 0 6px var(--red-wash), 0 16px 26px -12px rgba(215, 25, 32, 0.7);
+  animation: pop 0.6s var(--ease) 0.3s both;
+}
+.login-badge svg { fill: #fff; stroke: #fff; filter: drop-shadow(0 1px 1px rgba(110, 8, 13, 0.35)); }
+.login-head h1 { font-size: 1.95rem; font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; margin: 0 0 0.45rem; }
+.login-head .subtitle { margin: 0 auto; max-width: 30ch; font-size: 0.92rem; line-height: 1.55; color: var(--muted); }
 .input-icon { position: relative; }
 .input-icon > svg { position: absolute; left: 0.95rem; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; transition: color 0.15s; }
 .input-icon:focus-within > svg { color: var(--red-ink); }
@@ -503,7 +511,6 @@ button.login-submit:hover svg { transform: translateX(3px); }
   /* Centred header, with the rings radiating from the top centre to match. */
   .login-brand { align-items: center; text-align: center; }
   .login-brand .wordmark img { margin: 0 auto; }
-  .login-brand h2, .login-brand p { margin-left: auto; margin-right: auto; }
   .login-brand::before {
     background:
       radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.16) 0, transparent 45%),
@@ -514,15 +521,13 @@ button.login-submit:hover svg { transform: translateX(3px); }
   /* Phones show just the logo up top; the headline and pitch stay on desktop. */
   .login-brand .login-pitch, .login-brand .login-foot { display: none; }
   .login-brand .wordmark img { width: 148px; }
-  .login-brand h2 { font-size: 1.6rem; line-height: 1.15; max-width: 18ch; margin-bottom: 0.55rem; }
-  .login-brand h2 em { padding: 0 0.16em; border-radius: 7px; }
-  .login-brand p { font-size: 0.85rem; max-width: 34ch; }
   .login-form-wrap {
     background: #fff; border-radius: 24px 24px 0 0; margin-top: -24px; position: relative; z-index: 1;
     box-shadow: 0 -10px 30px rgba(17, 24, 39, 0.12); place-items: start center; padding: 2rem 1.5rem 1.75rem;
   }
   .login-card { border: 0; box-shadow: none; padding: 0; border-radius: 0; }
-  .login-card h1 { font-size: 1.85rem; }
+  .login-head h1 { font-size: 1.75rem; }
+  .login-badge { width: 52px; height: 52px; border-radius: 16px; }
   .login-mobile-foot { display: block; }
 }
 
@@ -664,9 +669,6 @@ tr:hover .badge { transform: translateX(2px); }
 .radiate i:nth-child(2) { animation-delay: 2s; }
 .radiate i:nth-child(3) { animation-delay: 4s; }
 @keyframes radiate { 0% { transform: scale(0.3); opacity: 0; } 15% { opacity: 0.7; } 100% { transform: scale(4); opacity: 0; } }
-/* "one token" gets its highlight drawn in after the headline lands. */
-.login-brand h2 em { background: linear-gradient(var(--ink), var(--ink)) no-repeat left center / 0% 100%; animation: highlight 0.7s var(--ease) 0.65s both; }
-@keyframes highlight { to { background-size: 100% 100%; } }
 
 /* The form arrives piece by piece. */
 .login-card { animation: rise 0.7s var(--ease) 0.15s both; }
