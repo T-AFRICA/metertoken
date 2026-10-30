@@ -11,6 +11,11 @@ import { useSession } from '../session';
 type Mode = 'units' | 'amount';
 const METER_RE = /^(\d{11}|\d{13})$/;
 
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
 export default function VendPage() {
   const me = useSession();
   const [meterNo, setMeterNo] = useState('');
@@ -118,10 +123,10 @@ export default function VendPage() {
       <>
         <div className="page-head no-print">
           <div>
-            <div className="eyebrow">Token result</div>
-            <h1>{ok ? 'Token generated' : open ? 'Result not confirmed' : 'No token issued'}</h1>
+            <div className="eyebrow">Ref {vend.reference.slice(0, 8).toUpperCase()}</div>
+            <h1>{ok ? 'Here’s the token.' : open ? 'We’re not sure yet.' : 'No token was issued.'}</h1>
           </div>
-          <button onClick={reset}><Icon name="plus" size={16} /> New vend</button>
+          <button onClick={reset}><Icon name="plus" size={16} /> Next customer</button>
         </div>
         <div className="grid2">
           <div className="card no-print">
@@ -130,8 +135,8 @@ export default function VendPage() {
                 <Icon name={ok ? 'check' : open ? 'alert' : 'x'} size={22} />
               </div>
               <div>
-                <span className={`badge ${vend.status}`}>{vend.status}</span>
-                <div className="hint">Ref {vend.reference.slice(0, 8).toUpperCase()}</div>
+                <b>{ok ? 'Read these digits to the customer, or print the receipt.' : open ? 'The vendor didn’t give a clear answer.' : 'Nothing was charged to the meter.'}</b>
+                <div className="hint"><span className={`badge ${vend.status}`}>{vend.status}</span></div>
               </div>
             </div>
 
@@ -188,17 +193,17 @@ export default function VendPage() {
     <>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Vending</div>
-          <h1>Generate electricity token</h1>
-          <p className="subtitle">Verify the meter, enter units or amount, then generate the token.</p>
+          <div className="eyebrow">{greeting()}, {me.user.displayName.split(/\s+/)[0]}.</div>
+          <h1>New token</h1>
+          <p className="subtitle">Check the meter number with the customer, tell us how much they want, and we’ll work out the price.</p>
         </div>
       </div>
       <div className="grid2">
         <div className="card">
           <div className={`step ${step1}`}>
-            <div className="step-n">{step1 === 'done' ? <Icon name="check" size={14} /> : 1}</div>
+            <div className="step-n">{step1 === 'done' ? <Icon name="check" size={16} /> : '01'}</div>
             <div className="step-body">
-              <div className="step-title">Meter number</div>
+              <div className="step-title">Which meter?</div>
               <div className="row" style={{ alignItems: 'stretch' }}>
                 <input
                   id="meter"
@@ -222,14 +227,14 @@ export default function VendPage() {
               {meterError && <div className="alert error"><Icon name="alert" size={16} /> {meterError}</div>}
               {meter?.valid && (
                 <div className="alert ok">
-                  <Icon name="check" size={16} /> Meter verified{meter.customerName ? ` · ${meter.customerName}` : ''}
+                  <Icon name="check" size={16} /> {meter.customerName ? <>Found it — <b>{meter.customerName}</b></> : 'Meter found'}
                 </div>
               )}
             </div>
           </div>
 
           <div className={`step ${step2}`}>
-            <div className="step-n">{step2 === 'done' ? <Icon name="check" size={14} /> : 2}</div>
+            <div className="step-n">{step2 === 'done' ? <Icon name="check" size={16} /> : '02'}</div>
             <div className="step-body">
               <div className="step-title">How much?</div>
               <div className="segmented" style={{ marginBottom: '0.8rem' }}>
@@ -244,7 +249,7 @@ export default function VendPage() {
                 disabled={!meter?.valid}
                 aria-label={mode === 'units' ? 'Units in kWh' : `Amount in ${me.currency}`}
                 onChange={(e) => setValue(e.target.value.replace(/[^\d.]/g, ''))}
-                placeholder={meter?.valid ? (mode === 'units' ? 'e.g. 5' : 'e.g. 1000') : 'Verify the meter first'}
+                placeholder={meter?.valid ? (mode === 'units' ? 'e.g. 5' : 'e.g. 1000') : 'Check the meter first'}
                 style={{ width: '100%' }}
               />
               {quoteError && <div className="alert error"><Icon name="alert" size={16} /> {quoteError}</div>}
@@ -253,11 +258,11 @@ export default function VendPage() {
         </div>
 
         <div className="card">
-          <h2>Amount</h2>
+          <h2>To pay</h2>
           {!quote ? (
             <div className="placeholder-amount">
-              <Icon name="receipt" size={36} />
-              <div>The price is calculated automatically from the active tariff.</div>
+              <div className="big-dash">—</div>
+              <p>The price appears here as soon as you enter units or an amount. It comes from the approved tariff, so you never have to work it out by hand.</p>
             </div>
           ) : (
             <>
@@ -292,7 +297,7 @@ export default function VendPage() {
             </button>
           ) : (
             <button className="primary huge" disabled={!quote || busy} onClick={() => generate(false)}>
-              <Icon name="bolt" /> {busy ? 'Generating… do not close' : 'Generate Token'}
+              {busy ? 'Generating — please keep this page open…' : 'Generate token'}
             </button>
           )}
         </div>

@@ -26,27 +26,36 @@ export default function LoginPage() {
   return (
     <div className="login-split">
       <section className="login-brand">
-        <div className="logo" style={{ padding: 0 }}>
-          <span className="logo-mark"><Icon name="bolt" size={20} /></span>
-          <span className="logo-text">Tronic<small>Token Portal</small></span>
+        <div className="wordmark">
+          <b>TR<i>O</i>NIC</b>
+          <span>Token desk</span>
         </div>
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h2>Prepaid electricity tokens, issued safely.</h2>
-          <p>Verify the meter, enter units, and issue an STS token with a printed receipt — every step recorded.</p>
-          <ul className="login-points">
-            <li><Icon name="check" /> Server-side pricing from approved tariffs</li>
-            <li><Icon name="check" /> Duplicate-vend protection on every meter</li>
-            <li><Icon name="check" /> Encrypted tokens and a tamper-evident activity log</li>
-          </ul>
+        <div>
+          <h2>
+            Keeping the lights on, <em>one token</em> at a time.
+          </h2>
+          <p>For Tronic agents and cashiers selling prepaid electricity at the counter.</p>
+          {/* A quiet nod to the thing on the customer's wall — decorative only. */}
+          <div className="meter-face" aria-hidden="true">
+            <div className="meter-lcd">
+              <div className="r1"><span>CREDIT</span><span>kWh</span></div>
+              <div className="r2">0128.40<small>kWh</small></div>
+            </div>
+            <div className="meter-keys">
+              {Array.from({ length: 12 }, (_, i) => <span key={i} className={i === 11 ? 'on' : ''} />)}
+            </div>
+          </div>
         </div>
-        <div className="hint" style={{ color: '#7c7c82', position: 'relative', zIndex: 1 }}>© Tronic · Authorised agents only</div>
+        <div className="login-foot">
+          <span>Tronic Kenya · Nairobi</span>
+          <span>Agents only</span>
+        </div>
       </section>
 
       <section className="login-form-wrap">
         <form className="login-card" onSubmit={submit}>
-          <div className="eyebrow">Agent sign in</div>
-          <h1>Welcome back</h1>
-          <p className="subtitle" style={{ marginBottom: '1.75rem' }}>Sign in with the account your administrator gave you.</p>
+          <h1>Sign in</h1>
+          <p className="subtitle">Use the username and password your supervisor set up for you.</p>
           <div className="field">
             <label htmlFor="username">Username</label>
             <input id="username" autoComplete="username" value={username} onChange={(e) => setUsername(e.target.value)} required autoFocus />
@@ -60,10 +69,10 @@ export default function LoginPage() {
               <Icon name="alert" size={16} /> {error}
             </div>
           )}
-          <button className="primary huge" disabled={busy} style={{ marginTop: '0.5rem' }}>
-            <Icon name="lock" size={17} /> {busy ? 'Signing in…' : 'Sign in'}
+          <button className="ink huge" disabled={busy} style={{ marginTop: '0.5rem' }}>
+            {busy ? 'Signing in…' : 'Sign in'}
           </button>
-          <p className="fineprint">All activity is recorded. Do not share your account.</p>
+          <p className="fineprint">Every sale is logged against your name, so please don’t share your login. Forgot it? Ask your supervisor to reset it.</p>
         </form>
       </section>
     </div>

@@ -80,12 +80,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     <SessionContext.Provider value={me}>
       <div className="shell">
         <aside className="sidebar">
-          <Link href="/vend" className="logo">
-            <span className="logo-mark"><Icon name="bolt" size={20} /></span>
-            <span className="logo-text">
-              Tronic
-              <small>Token Portal</small>
-            </span>
+          <Link href="/vend" className="wordmark">
+            <b>TR<i>O</i>NIC</b>
+            <span>Token desk</span>
           </Link>
           {NAV.map((group) => {
             const items = group.items.filter((i) => i.show(role));
@@ -118,15 +115,16 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
         <div className="content">
           <div className="content-top">
-            {now && (
-              <span className="clock">
-                {now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} ·{' '}
-                {now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            )}
-            <span className={`env-pill ${me.adapterMode}`} title={me.adapterMode === 'mock' ? 'Tokens are not valid on real meters' : 'Connected to the vendor STS service'}>
-              <span className="env-dot" />
-              {me.adapterMode === 'mock' ? 'MOCK MODE · tokens not valid on meters' : 'LIVE · vendor STS'}
+            <span className="clock">
+              {now &&
+                `${now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} · ${now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`}
+            </span>
+            <span className={`env-tag ${me.adapterMode}`}>
+              {me.adapterMode === 'mock' ? (
+                <>Practice tokens — they won’t load on a real meter <b>TEST</b></>
+              ) : (
+                <>Connected to the vendor <b>LIVE</b></>
+              )}
             </span>
           </div>
           <main>{children}</main>

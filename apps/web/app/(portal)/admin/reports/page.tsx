@@ -53,9 +53,9 @@ export default function ReportsPage() {
       <div className="card toolbar">
         <div className="field"><label>From</label><input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
         <div className="field"><label>To</label><input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></div>
-        <div className="field"><button className="primary" onClick={load}>Show</button></div>
+        <div className="field"><button className="ink" onClick={load}>Show</button></div>
         <div className="field">
-          <a className="button primary" href={`/api/admin/reports/export.csv?from=${from}&to=${to}`}><Icon name="download" size={16} /> Export CSV</a>
+          <a className="button" href={`/api/admin/reports/export.csv?from=${from}&to=${to}`}><Icon name="download" size={16} /> Export CSV</a>
         </div>
       </div>
       {error && <div className="alert error">{error}</div>}
@@ -78,7 +78,7 @@ export default function ReportsPage() {
                 <td><span className={`badge ${r.status}`}>{r.status}</span></td>
                 <td className="num">{r.count}</td>
                 <td className="num">{r.units}</td>
-                <td className="num">{r.currency} {r.amount}</td>
+                <td className="num">{r.currency} {Number(r.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
               </tr>
             ))}
             {rows.length === 0 && <tr><td colSpan={6} className="empty">No data for this period.</td></tr>}
