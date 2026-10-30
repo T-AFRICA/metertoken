@@ -73,7 +73,7 @@ export async function downloadTokenReceipt(vend: Vend, customerName: string) {
     ['Customer', customerName],
     ['Meter number', vend.meterNo],
     ['Units', `${vend.units} kWh`],
-    ['Amount paid', `${vend.currency} ${Number(vend.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ['Amount', `${vend.currency} ${Number(vend.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
     ['Date', new Date(vend.createdAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })],
     ['Reference', vend.reference.slice(0, 8).toUpperCase()],
   ];

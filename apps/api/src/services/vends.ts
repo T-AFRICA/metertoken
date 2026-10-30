@@ -100,46 +100,11 @@ function checkResult(ctx: AppContext, v: VendRow, r: IssueResult): string | null
   return null;
 }
 
-/** Takes a customer's purchase off their balance. Runs inside the vend's reservation transaction. */
-async function chargeCustomer(q: Queryable, customerId: string, vend: { id: string; meterNo: string; amount: string; currency: string }) {
-  const c = (
-    await q.query<{ meter_no: string; balance: string; active: boolean }>(
-      'SELECT meter_no, balance::text AS balance, active FROM customers WHERE id = $1 FOR UPDATE',
-      [customerId],
-    )
-  ).rows[0];
+/** A customer may only generate tokens for their own meter, and only while their account is active. */
+async function checkCustomerMeter(q: Queryable, customerId: string, meterNo: string) {
+  const c = (await q.query<{ meter_no: string; active: boolean }>('SELECT meter_no, active FROM customers WHERE id = $1', [customerId])).rows[0];
   if (!c || !c.active) throw new HttpError(403, 'CUSTOMER_INACTIVE', 'This customer account is not active');
-  if (c.meter_no !== vend.meterNo) throw new HttpError(404, 'QUOTE_NOT_FOUND', 'Quote not found');
-  if (new Decimal(c.balance).lt(vend.amount)) {
-    throw new HttpError(402, 'INSUFFICIENT_BALANCE', `Your balance (${formatAmount(c.balance, vend.currency)} ${vend.currency}) is too low for this token. Top up at a Tronic counter.`, {
-      balance: formatAmount(c.balance, vend.currency),
-    });
-  }
-  const after = (
-    await q.query<{ balance: string }>('UPDATE customers SET balance = balance - $2 WHERE id = $1 RETURNING balance::text AS balance', [customerId, vend.amount])
-  ).rows[0]!.balance;
-  await q.query(`INSERT INTO customer_ledger (customer_id, kind, amount, balance_after, vend_id) VALUES ($1, 'purchase', $2, $3, $4)`, [
-    customerId,
-    new Decimal(vend.amount).neg().toString(),
-    after,
-    vend.id,
-  ]);
-}
-
-/** Gives a customer their money back when a purchase ends FAILED. */
-async function refundCustomer(q: Queryable, v: Pick<VendRow, 'id' | 'customer_id' | 'amount'>, actorId: string | null, note: string) {
-  if (!v.customer_id) return;
-  const after = (
-    await q.query<{ balance: string }>('UPDATE customers SET balance = balance + $2 WHERE id = $1 RETURNING balance::text AS balance', [v.customer_id, v.amount])
-  ).rows[0]!.balance;
-  await q.query(`INSERT INTO customer_ledger (customer_id, kind, amount, balance_after, vend_id, user_id, note) VALUES ($1, 'refund', $2, $3, $4, $5, $6)`, [
-    v.customer_id,
-    v.amount,
-    after,
-    v.id,
-    actorId,
-    note,
-  ]);
+  if (c.meter_no !== meterNo) throw new HttpError(404, 'QUOTE_NOT_FOUND', 'Quote not found');
 }
 
 async function storeTokens(ctx: AppContext, q: Queryable, v: VendRow, r: IssueResult, status: VendStatus, actorId: string | null, note?: string) {
@@ -161,7 +126,7 @@ export interface CreateVendInput {
   quoteId: string;
   idempotencyKey: string;
   confirmDuplicate: boolean;
-  /** Set for a registered customer's own purchase: paid from their balance, for their meter only. */
+  /** Set when a registered customer generates a token for their own meter. */
   customerId?: string;
 }
 
@@ -227,9 +192,7 @@ export async function createVend(ctx: AppContext, user: SessionUser, input: Crea
             JSON.stringify(quote.lines), quote.tariff_version_id, ctx.adapter.mode, dup ? user.id : null, input.customerId ?? null],
         )
       ).rows[0]!.id;
-      if (input.customerId) {
-        await chargeCustomer(q, input.customerId, { id, meterNo: quote.meter_no, amount: quote.amount, currency: quote.currency });
-      }
+      if (input.customerId) await checkCustomerMeter(q, input.customerId, quote.meter_no);
       await writeAudit(q, {
         actorId: user.id,
         action: 'vend.requested',
@@ -282,7 +245,6 @@ async function submit(ctx: AppContext, user: SessionUser, v: VendRow) {
     await db.tx(async (q) => {
       await recordAttempt(q, v.id, 'issueCreditToken', rejected ? 'rejected' : 'unknown', latency, { code: (e as { code?: string }).code });
       await q.query(`UPDATE vends SET status = $2, error_message = $3, completed_at = CASE WHEN $2 = 'FAILED' THEN now() END WHERE id = $1`, [v.id, status, message]);
-      if (rejected) await refundCustomer(q, v, user.id, 'Vendor rejected the token request');
       await writeAudit(q, { actorId: user.id, action: rejected ? 'vend.failed' : 'vend.unknown', entity: 'vend', entityId: v.id, detail: { meterNo: v.meter_no, message } });
     });
   }
@@ -335,7 +297,6 @@ export async function resolveVend(ctx: AppContext, user: SessionUser, id: string
       `UPDATE vends SET status = $2, resolved_by = $3, resolution_note = $4, completed_at = now() WHERE id = $1`,
       [id, input.outcome, user.id, input.note],
     );
-    if (input.outcome === 'FAILED') await refundCustomer(q, v, user.id, `Resolved as failed: ${input.note}`);
     await writeAudit(q, {
       actorId: user.id,
       action: 'vend.resolved',

@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import type { Queryable } from '../db';
 import { HttpError, type SessionUser } from '../http';
-import { formatAmount } from './vends';
 
 /** The inactive staff account that customer purchases are recorded under (created in migration 002). */
 export const SELF_SERVICE_USERNAME = 'self-service';
@@ -13,14 +12,12 @@ export interface CustomerRow {
   meter_no: string;
   name: string;
   phone: string | null;
-  balance: string;
-  currency: string;
   active: boolean;
   created_at: Date;
   last_login_at: Date | null;
 }
 
-export const CUSTOMER_SELECT = `SELECT id, meter_no, name, phone, balance::text AS balance, currency, active, created_at, last_login_at FROM customers`;
+export const CUSTOMER_SELECT = `SELECT id, meter_no, name, phone, active, created_at, last_login_at FROM customers`;
 
 export function customerView(c: CustomerRow) {
   return {
@@ -28,8 +25,6 @@ export function customerView(c: CustomerRow) {
     meterNo: c.meter_no,
     name: c.name,
     phone: c.phone,
-    balance: formatAmount(c.balance, c.currency),
-    currency: c.currency,
     active: c.active,
     createdAt: c.created_at,
     lastLoginAt: c.last_login_at,

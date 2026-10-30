@@ -215,9 +215,6 @@ describe('customer self-service', () => {
     return r.json().id as string;
   }
 
-  const topUp = (id: string, amount: string, key = randomUUID()) =>
-    call(cashier, 'POST', `/api/customers/${id}/topups`, { amount }, { 'idempotency-key': key });
-
   async function customerLogin(meterNo: string, pin = '4321'): Promise<CustomerSession> {
     const res = await app.inject({ method: 'POST', url: '/api/customer/login', payload: { meterNo, pin } });
     expect(res.statusCode, res.body).toBe(200);
@@ -250,53 +247,35 @@ describe('customer self-service', () => {
     expect(locked.statusCode).toBe(429);
   });
 
-  it('buys a token from the balance and never goes below zero', async () => {
+  it('generates a token for the customer’s own meter and keeps it on their record', async () => {
     const id = await register('55555555555');
     const s = await customerLogin('55555555555');
-
-    const broke = await buy(s, '1');
-    expect(broke.res.statusCode).toBe(402);
-    expect(broke.res.json().error).toBe('INSUFFICIENT_BALANCE');
-
-    const key = randomUUID();
-    expect((await topUp(id, '10000', key)).json().balance).toBe('10000.00');
-    // The same top-up request twice adds the money once.
-    expect((await topUp(id, '10000', key)).json().balance).toBe('10000.00');
-
     const { quote, res } = await buy(s, '2');
     expect(res.statusCode, res.body).toBe(200);
     const body = res.json();
     expect(body.vend.status).toBe('SUCCEEDED');
     expect(body.vend.tokens[0]).toMatch(/^MOCK /);
-    expect(body.customer.balance).toBe(new Decimal('10000').minus(quote.amount).toFixed(2));
+    expect(body.vend.meterNo).toBe('55555555555');
 
     const list = (await ccall(s, 'GET', '/api/customer/vends')).json();
     expect(list.items).toHaveLength(1);
     expect(list.items[0].tokenLast4).toBeTruthy();
-    // Staff see the purchase under the self-service account.
+    // Staff see the token under the self-service account and on the customer's record.
     const staff = (await call(supervisor, 'GET', `/api/vends/${body.vend.id}`)).json();
     expect(staff.operator).toBe('Customer self-service');
+    const record = (await call(cashier, 'GET', `/api/customers/${id}/vends`)).json();
+    expect(record.items[0].id).toBe(body.vend.id);
+    expect(record.month.count).toBe(1);
+    expect(record.month.amount).toBe(new Decimal(quote.amount).toFixed(2));
   });
 
-  it('refunds the balance when the vendor rejects or a supervisor fails the vend', async () => {
-    const rejectId = await register('55555559999');
-    await topUp(rejectId, '5000');
-    const rs = await customerLogin('55555559999');
-    const rejected = await buy(rs, '1');
-    expect(rejected.res.json().vend.status).toBe('FAILED');
-    expect(rejected.res.json().customer.balance).toBe('5000.00');
-
-    const unknownId = await register('55555558888');
-    await topUp(unknownId, '5000');
-    const us = await customerLogin('55555558888');
-    const unknown = await buy(us, '1');
-    const v = unknown.res.json();
-    expect(v.vend.status).toBe('UNKNOWN');
-    expect(v.customer.balance).toBe(new Decimal('5000').minus(unknown.quote.amount).toFixed(2));
-    await call(supervisor, 'POST', `/api/vends/${v.vend.id}/resolve`, { outcome: 'FAILED', note: 'Not in vendor history' });
-    expect((await ccall(us, 'GET', '/api/customer/me')).json().customer.balance).toBe('5000.00');
-    const ledger = (await call(supervisor, 'GET', `/api/customers/${unknownId}/ledger`)).json().items.map((l: { kind: string }) => l.kind);
-    expect(ledger).toEqual(['refund', 'purchase', 'topup']);
+  it('blocks a deactivated customer', async () => {
+    const id = await register('55555559999');
+    const s = await customerLogin('55555559999');
+    expect((await call(supervisor, 'PATCH', `/api/customers/${id}`, { active: false })).statusCode).toBe(200);
+    expect((await ccall(s, 'GET', '/api/customer/me')).statusCode).toBe(401);
+    expect((await app.inject({ method: 'POST', url: '/api/customer/login', payload: { meterNo: '55555559999', pin: '4321' } })).statusCode).toBe(401);
+    await call(supervisor, 'PATCH', `/api/customers/${id}`, { active: true });
   });
 
   it('keeps customers to their own meter and needs their CSRF token', async () => {

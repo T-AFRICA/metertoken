@@ -1,6 +1,5 @@
 import { hash, verify } from '@node-rs/argon2';
 import { decimalStringSchema, meterNoSchema } from '@tronic/core';
-import Decimal from 'decimal.js';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { audit } from '../audit';
@@ -36,8 +35,8 @@ function requireCustomer(req: FastifyRequest): CustomerSession {
 }
 
 /**
- * The customer page: a registered customer signs in with their meter number and PIN and buys tokens
- * for that meter only, paid from the balance staff topped up at the counter.
+ * The customer page: a registered customer signs in with their meter number and PIN and generates
+ * tokens for that meter only. Payment is settled with the tenant outside the portal.
  */
 export function customerRoutes(app: FastifyInstance, ctx: AppContext) {
   const quotes = createQuoteService(ctx);
@@ -112,7 +111,7 @@ export function customerRoutes(app: FastifyInstance, ctx: AppContext) {
     const customer = await loadCustomer(c.id);
     const service = await selfServiceUser(ctx.db);
     const q = await quotes.createQuote(service.id, customer.meter_no, body.mode, body.value);
-    return { ...q, balance: customerView(customer).balance, affordable: new Decimal(customer.balance).gte(q.amount) };
+    return q;
   });
 
   app.post('/api/customer/vends', async (req) => {

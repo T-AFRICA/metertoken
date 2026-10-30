@@ -59,8 +59,6 @@ export interface Customer {
   meterNo: string;
   name: string;
   phone: string | null;
-  balance: string;
-  currency: string;
   active: boolean;
   createdAt: string;
   lastLoginAt: string | null;

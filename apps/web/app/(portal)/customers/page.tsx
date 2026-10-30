@@ -1,41 +1,42 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { api, errorText } from '@/lib/api';
-import { canVend, formatDate, groupMeter, isSupervisor, money, type Customer } from '@/lib/types';
+import { formatDate, groupMeter, isSupervisor, money, statusLabel, type Customer, type VendStatus } from '@/lib/types';
 import { useSession } from '../session';
 
-interface LedgerRow {
+interface TokenRow {
   id: string;
-  kind: 'topup' | 'purchase' | 'refund';
+  units: string;
   amount: string;
-  balanceAfter: string;
-  note: string | null;
-  by: string | null;
+  currency: string;
+  status: VendStatus;
+  tokenLast4: string | null;
   createdAt: string;
 }
 
-const KIND_LABEL = { topup: 'Top-up', purchase: 'Token bought', refund: 'Refund' } as const;
+interface CustomerRecord {
+  month: { count: number; units: string; amount: string; currency: string };
+  items: TokenRow[];
+}
+
 const EMPTY_FORM = { meterNo: '', name: '', phone: '', pin: '' };
 
 export default function CustomersPage() {
   const me = useSession();
   const manage = isSupervisor(me.user.role);
-  const topUpAllowed = canVend(me.user.role);
   const [items, setItems] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Customer | null>(null);
-  const [ledger, setLedger] = useState<LedgerRow[]>([]);
+  const [record, setRecord] = useState<CustomerRecord | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [amount, setAmount] = useState('');
-  const [note, setNote] = useState('');
   const [newPin, setNewPin] = useState('');
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [busy, setBusy] = useState(false);
-  const topUpKey = useRef('');
 
   const load = (q = search) =>
     api<{ items: Customer[] }>(`/api/customers${q ? `?q=${encodeURIComponent(q)}` : ''}`)
@@ -52,13 +53,10 @@ export default function CustomersPage() {
   }, [search]);
 
   useEffect(() => {
-    setLedger([]);
-    setAmount('');
-    setNote('');
+    setRecord(null);
     setNewPin('');
     setInfo('');
-    topUpKey.current = crypto.randomUUID();
-    if (selected) api<{ items: LedgerRow[] }>(`/api/customers/${selected.id}/ledger`).then((r) => setLedger(r.items)).catch(() => undefined);
+    if (selected) api<CustomerRecord>(`/api/customers/${selected.id}/vends`).then(setRecord).catch(() => undefined);
   }, [selected?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function run(fn: () => Promise<unknown>, done?: string) {
@@ -80,25 +78,10 @@ export default function CustomersPage() {
 
   async function register(e: React.FormEvent) {
     e.preventDefault();
-    const ok = await run(() => api('/api/customers', { method: 'POST', body: { ...form, phone: form.phone || undefined } }), `${form.name} can now buy tokens with meter ${groupMeter(form.meterNo)} and their PIN.`);
+    const ok = await run(() => api('/api/customers', { method: 'POST', body: { ...form, phone: form.phone || undefined } }), `${form.name} can now generate tokens with meter ${groupMeter(form.meterNo)} and their PIN.`);
     if (ok) {
       setForm(EMPTY_FORM);
       setShowForm(false);
-    }
-  }
-
-  async function topUp(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selected) return;
-    const ok = await run(
-      () => api(`/api/customers/${selected.id}/topups`, { method: 'POST', body: { amount, note: note || undefined }, headers: { 'idempotency-key': topUpKey.current } }),
-      `Added ${me.currency} ${money(amount)} to ${selected.name}'s balance.`,
-    );
-    if (ok) {
-      topUpKey.current = crypto.randomUUID();
-      setAmount('');
-      setNote('');
-      api<{ items: LedgerRow[] }>(`/api/customers/${selected.id}/ledger`).then((r) => setLedger(r.items));
     }
   }
 
@@ -117,7 +100,7 @@ export default function CustomersPage() {
         <div>
           <div className="eyebrow">Vending</div>
           <h1>Customers</h1>
-          <p className="subtitle">Registered customers buy their own tokens from a balance you top up here after taking payment.</p>
+          <p className="subtitle">Registered customers generate their own tokens with their meter number and PIN. Payment is settled with the tenant.</p>
         </div>
         {manage && (
           <button className="ink" onClick={() => setShowForm((v) => !v)}>
@@ -155,14 +138,14 @@ export default function CustomersPage() {
           <div className="table-wrap">
             <table className="stack">
               <thead>
-                <tr><th>Meter</th><th>Name</th><th className="num">Balance</th><th>Status</th></tr>
+                <tr><th>Meter</th><th>Name</th><th>Phone</th><th>Status</th></tr>
               </thead>
               <tbody>
                 {items.map((c) => (
                   <tr key={c.id} className={`clickable ${selected?.id === c.id ? 'picked' : ''}`} onClick={() => setSelected(c)}>
                     <td className="mono" data-label="Meter">{groupMeter(c.meterNo)}</td>
                     <td data-label="Name">{c.name}</td>
-                    <td className="num" data-label="Balance">{c.currency} {money(c.balance)}</td>
+                    <td data-label="Phone">{c.phone ?? '—'}</td>
                     <td data-label="Status"><span className={`badge ${c.active ? 'SUCCEEDED' : 'FAILED'}`}>{c.active ? 'Active' : 'Inactive'}</span></td>
                   </tr>
                 ))}
@@ -177,7 +160,7 @@ export default function CustomersPage() {
             <div className="cust-empty">
               <Icon name="wallet" size={28} />
               <b>Pick a customer</b>
-              <span>Top up their balance, reset their PIN or see their history.</span>
+              <span>See their tokens, reset their PIN or deactivate them.</span>
             </div>
           ) : (
             <>
@@ -189,24 +172,14 @@ export default function CustomersPage() {
                 <span className={`badge ${selected.active ? 'SUCCEEDED' : 'FAILED'}`}>{selected.active ? 'Active' : 'Inactive'}</span>
               </div>
               <div className="cust-balance">
-                <span>Balance</span>
-                <b>{selected.currency} {money(selected.balance)}</b>
-                <em>{selected.lastLoginAt ? `Last signed in ${formatDate(selected.lastLoginAt)}` : 'Has not signed in yet'}</em>
+                <span>This month</span>
+                <b>{record ? `${record.month.currency} ${money(record.month.amount)}` : '–'}</b>
+                <em>
+                  {record ? `${record.month.count} token${record.month.count === 1 ? '' : 's'} · ${money(record.month.units)} kWh` : 'Loading…'}
+                  {' · '}
+                  {selected.lastLoginAt ? `last signed in ${formatDate(selected.lastLoginAt)}` : 'has not signed in yet'}
+                </em>
               </div>
-
-              {topUpAllowed && selected.active && (
-                <form onSubmit={topUp} className="cust-form">
-                  <label className="label">Top up after taking payment</label>
-                  <div className="input-group">
-                    <div className="input-affix">
-                      <input inputMode="decimal" placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ''))} required />
-                      <span>{selected.currency}</span>
-                    </div>
-                    <button className="primary" disabled={busy || !amount}><Icon name="plus" size={16} /> Add</button>
-                  </div>
-                  <input placeholder="Note, e.g. cash receipt no. (optional)" value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} />
-                </form>
-              )}
 
               {manage && (
                 <div className="cust-manage">
@@ -220,21 +193,21 @@ export default function CustomersPage() {
                 </div>
               )}
 
-              <h2 className="cust-sub">History</h2>
+              <h2 className="cust-sub">Tokens</h2>
               <ul className="ledger">
-                {ledger.map((l) => (
-                  <li key={l.id} className={l.kind}>
+                {record?.items.map((t) => (
+                  <li key={t.id} className={t.status}>
                     <div>
-                      <b>{KIND_LABEL[l.kind]}</b>
-                      <span>{formatDate(l.createdAt)}{l.by ? ` · ${l.by}` : ''}{l.note ? ` · ${l.note}` : ''}</span>
+                      <Link href={`/vends/${t.id}`}><b>{money(t.units)} kWh</b></Link>
+                      <span>{formatDate(t.createdAt)}{t.tokenLast4 ? ` · •••• ${t.tokenLast4}` : ''}</span>
                     </div>
                     <div className="num">
-                      <b>{l.kind === 'purchase' ? '' : '+'}{money(l.amount)}</b>
-                      <span>= {money(l.balanceAfter)}</span>
+                      <b>{t.currency} {money(t.amount)}</b>
+                      <span>{statusLabel(t.status)}</span>
                     </div>
                   </li>
                 ))}
-                {ledger.length === 0 && <li className="empty-row">No balance changes yet.</li>}
+                {record && record.items.length === 0 && <li className="empty-row">No tokens yet.</li>}
               </ul>
             </>
           )}

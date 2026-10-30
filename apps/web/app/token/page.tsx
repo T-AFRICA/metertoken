@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { CustomerDesk } from '@/components/CustomerDesk';
 
-export const metadata = { title: 'Buy a token · Tronic' };
+export const metadata = { title: 'Generate token · Tronic' };
 
 /** The customer page on its own, for phones and for sharing as a link. */
 export default function TokenPage() {

@@ -66,7 +66,7 @@ export default function LoginPage() {
         </div>
         <div className="login-pitch">
           <CustomerDesk />
-          <p className="flow-caption"><b>Registered customer?</b> Buy your token here with your meter number and PIN.</p>
+          <p className="flow-caption"><b>Registered customer?</b> Generate your token here with your meter number and PIN.</p>
         </div>
         <div className="login-foot">
           <span>Tronic Kenya · Nairobi</span>
@@ -131,7 +131,7 @@ export default function LoginPage() {
           </p>
           <Link href="/token" className="customer-link">
             <Icon name="bolt" size={16} />
-            <span><b>Customer?</b> Buy your token with your meter number and PIN</span>
+            <span><b>Customer?</b> Generate your token with your meter number and PIN</span>
             <Icon name="arrow" size={16} />
           </Link>
           <div className="login-mobile-foot">Tronic Kenya · Nairobi</div>

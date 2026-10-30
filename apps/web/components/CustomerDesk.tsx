@@ -12,11 +12,6 @@ interface Session {
   adapterMode: 'mock' | 'live';
 }
 
-interface CustomerQuote extends Quote {
-  balance: string;
-  affordable: boolean;
-}
-
 interface Recent {
   id: string;
   units: string;
@@ -32,7 +27,7 @@ const METER_RE = /^(\d{11}|\d{13})$/;
 
 /**
  * A registered customer's own token desk: meter number + PIN, then units, then the token.
- * Paid from the balance a Tronic counter topped up; the server checks everything again.
+ * Payment is settled with the tenant outside the portal; the server checks everything again.
  */
 export function CustomerDesk() {
   const [session, setSession] = useState<Session | null>(null);
@@ -40,7 +35,7 @@ export function CustomerDesk() {
   const [meterNo, setMeterNo] = useState('');
   const [pin, setPin] = useState('');
   const [units, setUnits] = useState('');
-  const [quote, setQuote] = useState<CustomerQuote | null>(null);
+  const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState('');
   const [vend, setVend] = useState<Vend | null>(null);
   const [recent, setRecent] = useState<Recent[]>([]);
@@ -80,7 +75,7 @@ export function CustomerDesk() {
     if (!session || vend || !units || Number(units) <= 0) return;
     const seq = ++quoteSeq.current;
     const t = setTimeout(() => {
-      call<CustomerQuote>('/api/customer/quotes', 'POST', { mode: 'units', value: units })
+      call<Quote>('/api/customer/quotes', 'POST', { mode: 'units', value: units })
         .then((q) => {
           if (seq !== quoteSeq.current) return;
           idemKey.current = crypto.randomUUID();
@@ -120,10 +115,9 @@ export function CustomerDesk() {
     setBusy(true);
     try {
       const r = await call<{ vend: Vend; customer: Customer }>('/api/customer/vends', 'POST', { quoteId: quote.quoteId }, { 'idempotency-key': idemKey.current });
-      setSession({ ...session, customer: r.customer });
       setVend(r.vend);
     } catch (err) {
-      setError(err instanceof ApiError && err.code === 'POSSIBLE_DUPLICATE' ? 'You bought the same amount a few minutes ago. Check your recent tokens below, or wait a few minutes.' : errorText(err));
+      setError(err instanceof ApiError && err.code === 'POSSIBLE_DUPLICATE' ? 'You generated the same amount a few minutes ago. Check your recent tokens below, or wait a few minutes.' : errorText(err));
       // The quote may be spent or expired; fetch a new one.
       setRequote((n) => n + 1);
     } finally {
@@ -155,12 +149,11 @@ export function CustomerDesk() {
 
   const step = !session ? 1 : vend ? 3 : 2;
   const c = session?.customer;
-  const short = Boolean(quote && !quote.affordable);
 
   return (
     <div className="cdesk">
       <div className="fd-head">
-        <span className="fd-title"><Icon name="bolt" size={15} /> Buy a token</span>
+        <span className="fd-title"><Icon name="bolt" size={15} /> Generate token</span>
         <span className="fd-tag">Customers</span>
       </div>
 
@@ -193,7 +186,7 @@ export function CustomerDesk() {
           <button className="primary cd-btn" disabled={busy || !METER_RE.test(meterNo) || pin.length < 4}>
             {busy ? <><span className="spinner" /> Checking…</> : <>Continue <Icon name="arrow" size={16} /></>}
           </button>
-          <p className="cd-note">Not registered yet? Visit a Tronic counter with your meter number to get a PIN and top up.</p>
+          <p className="cd-note">Not registered yet? Ask Tronic to register your meter and give you a PIN.</p>
         </form>
       ) : !vend ? (
         <div className="cd-form">
@@ -201,10 +194,6 @@ export function CustomerDesk() {
             <div>
               <b>{c!.name}</b>
               <span>Meter {groupMeter(c!.meterNo)}</span>
-            </div>
-            <div className="cd-balance">
-              <span>Balance</span>
-              <b>{c!.currency} {money(c!.balance)}</b>
             </div>
           </div>
 
@@ -220,12 +209,11 @@ export function CustomerDesk() {
             ))}
           </div>
 
-          <div className={`cd-total ${short ? 'short' : ''}`}>
+          <div className="cd-total">
             {quote ? (
               <>
-                <span>Total</span>
+                <span>Price · {money(quote.units)} kWh</span>
                 <b>{quote.currency} {money(quote.amount)}</b>
-                <em>{short ? 'Your balance is too low — top up at a Tronic counter' : `Balance after: ${quote.currency} ${money(Number(c!.balance) - Number(quote.amount))}`}</em>
               </>
             ) : (
               <span className="cd-muted">{quoteError || (units ? 'Working out the price…' : 'Pick or type the units you want')}</span>
@@ -233,7 +221,7 @@ export function CustomerDesk() {
           </div>
 
           {error && <div className="cd-error"><Icon name="alert" size={14} /> {error}</div>}
-          <button className="primary cd-btn" onClick={generate} disabled={busy || !quote || short}>
+          <button className="primary cd-btn" onClick={generate} disabled={busy || !quote}>
             {busy ? <><span className="spinner" /> Generating…</> : <><Icon name="bolt" size={16} /> Generate token</>}
           </button>
 
@@ -243,7 +231,7 @@ export function CustomerDesk() {
               {recent.slice(0, 3).map((r) => (
                 <button type="button" key={r.id} onClick={() => showRecent(r.id)} disabled={r.status !== 'SUCCEEDED'}>
                   <span>{new Date(r.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · {r.units} kWh</span>
-                  <span className="mono">{r.status === 'SUCCEEDED' ? `•••• ${r.tokenLast4}` : r.status === 'FAILED' ? 'Refunded' : 'Being checked'}</span>
+                  <span className="mono">{r.status === 'SUCCEEDED' ? `•••• ${r.tokenLast4}` : r.status === 'FAILED' ? 'Not issued' : 'Being checked'}</span>
                 </button>
               ))}
             </div>
@@ -267,22 +255,21 @@ export function CustomerDesk() {
                   <Icon name={copied ? 'check' : 'copy'} size={16} /> {copied ? 'Copied' : 'Copy'}
                 </button>
               </div>
-              <p className="cd-note">Paid {vend.currency} {money(vend.amount)} · balance now {c!.currency} {money(c!.balance)}</p>
-            </>
+                          </>
           ) : vend.status === 'FAILED' ? (
             <div className="cd-state">
               <Icon name="alert" size={22} />
               <b>No token was issued</b>
-              <span>The vendor turned this request down. Your balance was refunded.</span>
+              <span>The vendor turned this request down. Nothing was charged; you can try again.</span>
             </div>
           ) : (
             <div className="cd-state">
               <Icon name="history" size={22} />
               <b>We’re confirming your token</b>
-              <span>The vendor did not answer in time. Your money is held, not lost. Staff will check it — please don’t buy again for this meter yet. Reference {vend.reference.slice(0, 8).toUpperCase()}.</span>
+              <span>The vendor did not answer in time. Tronic staff will check it — please don’t generate another token for this meter yet. Reference {vend.reference.slice(0, 8).toUpperCase()}.</span>
             </div>
           )}
-          <button type="button" className="cd-link" onClick={another}>← Buy another token</button>
+          <button type="button" className="cd-link" onClick={another}>← Generate another token</button>
         </div>
       )}
     </div>

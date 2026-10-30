@@ -1,5 +1,4 @@
 import { decimalStringSchema, meterNoSchema } from '@tronic/core';
-import Decimal from 'decimal.js';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { writeAudit } from '../audit';
@@ -13,11 +12,9 @@ import { hashPassword } from './auth';
 
 const uuid = z.string().uuid();
 const MANAGE_ROLES = ['supervisor', 'admin'] as const;
-// Cashiers take the cash at the counter, so they can top up as well.
-const TOPUP_ROLES = ['cashier', 'supervisor', 'admin'] as const;
 const VIEW_ROLES = ['cashier', 'supervisor', 'admin', 'auditor'] as const;
 
-/** Staff side of customer accounts: register, top up, reset PIN, deactivate. */
+/** Staff side of customer accounts: register, reset PIN, deactivate, see their tokens. */
 export function customerAdminRoutes(app: FastifyInstance, ctx: AppContext) {
   const quotes = createQuoteService(ctx);
 
@@ -93,61 +90,32 @@ export function customerAdminRoutes(app: FastifyInstance, ctx: AppContext) {
     return { ok: true };
   });
 
-  app.post('/api/customers/:id/topups', { preHandler: requireRole(...TOPUP_ROLES) }, async (req) => {
-    const user = requireUser(req);
-    const { id } = z.object({ id: uuid }).parse(req.params);
-    const body = z.object({ amount: decimalStringSchema, note: z.string().trim().max(200).optional() }).parse(req.body);
-    const idempotencyKey = z.string().min(8).max(100).parse(req.headers['idempotency-key'], { path: ['Idempotency-Key'] });
-    const amount = new Decimal(body.amount);
-    if (amount.lte(0)) throw new HttpError(400, 'INVALID_VALUE', 'Enter an amount above zero');
-    if (amount.gt(ctx.cfg.MAX_VEND_AMOUNT)) throw new HttpError(400, 'LIMIT', `Maximum top-up is ${ctx.cfg.MAX_VEND_AMOUNT} ${ctx.cfg.CURRENCY}`);
-
-    try {
-      await ctx.db.tx(async (q) => {
-        const replay = (await q.query('SELECT customer_id FROM customer_ledger WHERE idempotency_key = $1', [idempotencyKey])).rows[0];
-        if (replay) {
-          if (replay.customer_id !== id) throw new HttpError(409, 'IDEMPOTENCY_CONFLICT', 'This request key was already used');
-          return;
-        }
-        const c = (await q.query<{ active: boolean }>('SELECT active FROM customers WHERE id = $1 FOR UPDATE', [id])).rows[0];
-        if (!c) throw new HttpError(404, 'NOT_FOUND', 'Customer not found');
-        if (!c.active) throw new HttpError(409, 'CUSTOMER_INACTIVE', 'Reactivate this customer before topping up');
-        const after = (
-          await q.query<{ balance: string }>('UPDATE customers SET balance = balance + $2 WHERE id = $1 RETURNING balance::text AS balance', [id, amount.toString()])
-        ).rows[0]!.balance;
-        await q.query(
-          `INSERT INTO customer_ledger (customer_id, kind, amount, balance_after, user_id, idempotency_key, note) VALUES ($1, 'topup', $2, $3, $4, $5, $6)`,
-          [id, amount.toString(), after, user.id, idempotencyKey, body.note || null],
-        );
-        await writeAudit(q, { actorId: user.id, action: 'customer.topped_up', entity: 'customer', entityId: id, detail: { amount: amount.toString(), balanceAfter: after } });
-      });
-    } catch (e) {
-      // Two identical requests raced; the first one won and this is its replay.
-      if (!isUniqueViolation(e, 'idempotency_key')) throw e;
-    }
-    return customerView((await ctx.db.query<CustomerRow>(`${CUSTOMER_SELECT} WHERE id = $1`, [id])).rows[0]!);
-  });
-
-  app.get('/api/customers/:id/ledger', { preHandler: requireRole(...VIEW_ROLES) }, async (req) => {
+  // The customer's tokens and this month's totals, for settling with the tenant.
+  app.get('/api/customers/:id/vends', { preHandler: requireRole(...VIEW_ROLES) }, async (req) => {
     const { id } = z.object({ id: uuid }).parse(req.params);
     const rows = (
       await ctx.db.query(
-        `SELECT l.id::text AS id, l.kind, l.amount::text AS amount, l.balance_after::text AS balance_after, l.note, l.created_at,
-                l.vend_id, u.display_name AS by_name, c.currency
-           FROM customer_ledger l JOIN customers c ON c.id = l.customer_id LEFT JOIN users u ON u.id = l.user_id
-          WHERE l.customer_id = $1 ORDER BY l.id DESC LIMIT 100`,
+        `SELECT id, units::text AS units, amount::text AS amount, currency, status, token_last4, created_at
+           FROM vends WHERE customer_id = $1 ORDER BY created_at DESC LIMIT 50`,
         [id],
       )
     ).rows;
+    const month = (
+      await ctx.db.query<{ count: number; units: string | null; amount: string | null }>(
+        `SELECT count(*)::int AS count, sum(units)::text AS units, sum(amount)::text AS amount FROM vends
+          WHERE customer_id = $1 AND status = 'SUCCEEDED' AND created_at >= date_trunc('month', now())`,
+        [id],
+      )
+    ).rows[0]!;
     return {
+      month: { count: month.count, units: month.units ?? '0', amount: formatAmount(month.amount ?? '0', ctx.cfg.CURRENCY), currency: ctx.cfg.CURRENCY },
       items: rows.map((r) => ({
         id: r.id,
-        kind: r.kind,
+        units: r.units,
         amount: formatAmount(r.amount, r.currency),
-        balanceAfter: formatAmount(r.balance_after, r.currency),
-        note: r.note,
-        vendId: r.vend_id,
-        by: r.by_name,
+        currency: r.currency,
+        status: r.status,
+        tokenLast4: r.token_last4,
         createdAt: r.created_at,
       })),
     };
