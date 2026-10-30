@@ -454,7 +454,7 @@ tr.picked td { background: var(--red-wash); }
 
 /* ---- Login ---- */
 .login-split { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
-.login-brand { background: var(--red-panel); color: rgba(255, 255, 255, 0.9); padding: 2.75rem 3.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 2rem; position: relative; overflow: hidden; isolation: isolate; }
+.login-brand { background: var(--red-panel); color: rgba(255, 255, 255, 0.9); padding: 2.25rem 3.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1.25rem; position: relative; overflow: hidden; isolation: isolate; }
 .login-brand { background: radial-gradient(120% 70% at 0% 100%, rgba(70, 0, 6, 0.35) 0, transparent 60%), var(--red-panel); }
 /* Faint rings radiating from the corner, like the sun in the logo. Decorative only. */
 .login-brand::before {
@@ -470,23 +470,25 @@ tr.picked td { background: var(--red-wash); }
 .login-brand .wordmark span { color: rgba(255, 255, 255, 0.7); }
 /* Sign-in: an illustrative preview of the token flow on the red panel (no data, no requests). */
 .login-pitch { display: flex; flex-direction: column; align-items: center; gap: 1.4rem; }
-.flow-caption { margin: 0; color: rgba(255, 255, 255, 0.82); font-size: 0.9rem; text-align: center; }
-.flow-caption b { color: #fff; font-weight: 600; }
 /* Customer card: a calm white card with one clear action per step. */
 .cdesk {
   width: 100%; max-width: 400px; background: #fff; color: var(--ink); border-radius: 24px; padding: 1.5rem 1.5rem 1.4rem; font-size: 0.84rem; text-align: left;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 40px 70px -24px rgba(60, 0, 6, 0.65), 0 14px 28px -14px rgba(60, 0, 6, 0.45);
 }
-.cd-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.35rem; }
-.cd-kicker { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red-ink); }
-.cd-kicker svg { fill: currentColor; }
-.cd-head h3 { margin: 0.35rem 0 0.2rem; font-family: var(--display); font-size: 1.3rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; color: var(--ink); }
-.cd-head p { margin: 0; font-size: 0.78rem; color: var(--muted); line-height: 1.45; }
-.cd-head > div:first-child { animation: fade 0.35s ease both; }
-.cd-progress { flex: none; display: grid; justify-items: end; gap: 0.4rem; padding-top: 0.15rem; }
-.cd-progress span { font-size: 0.68rem; font-weight: 600; color: var(--faint); font-variant-numeric: tabular-nums; }
-.cd-progress div { display: flex; gap: 4px; }
-.cd-progress i { width: 14px; height: 4px; border-radius: 99px; background: #eceef2; transition: width 0.4s var(--ease), background 0.3s; }
+.cd-head { display: grid; justify-items: center; text-align: center; margin-bottom: 1.15rem; }
+.cd-badge {
+  width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 0.6rem; border-radius: 15px; color: #fff;
+  background: linear-gradient(180deg, #e8262f 0%, #b5111a 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 5px var(--red-wash), 0 12px 22px -10px rgba(215, 25, 32, 0.7);
+  animation: pop 0.5s var(--ease) both;
+}
+.cd-badge svg { fill: #fff; }
+.cd-kicker { font-size: 0.64rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--red-ink); }
+.cd-head h3 { margin: 0.2rem 0 0.3rem; font-family: var(--display); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; color: var(--ink); }
+.cd-head h3 em { font-style: normal; background: linear-gradient(180deg, #e8262f 0%, #a90f17 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.cd-head p { margin: 0; max-width: 30ch; font-size: 0.8rem; color: var(--muted); line-height: 1.45; animation: fade 0.35s ease both; }
+.cd-progress { display: flex; gap: 5px; margin-top: 0.85rem; }
+.cd-progress i { width: 16px; height: 4px; border-radius: 99px; background: #eceef2; transition: width 0.4s var(--ease), background 0.3s; }
 .cd-progress i.done { background: #f3b4b7; }
 .cd-progress i.on { width: 24px; background: var(--red); }
 .cd-skeleton { display: grid; gap: 0.6rem; }
@@ -510,7 +512,7 @@ tr.picked td { background: var(--red-wash); }
 .cd-icon-btn:hover { background: var(--paper); border-color: #eef0f3; color: var(--red-ink); }
 
 /* The units, as the hero of the card. */
-.cd-amount { display: flex; align-items: baseline; justify-content: center; gap: 0.4rem; margin-top: 0.6rem; padding: 0.9rem 1rem 0.7rem; border-radius: 18px; background: #fafbfc; border: 1px solid #eef0f3; cursor: text; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+.cd-amount { display: flex; align-items: baseline; justify-content: center; gap: 0.4rem; margin-top: 0.45rem; padding: 0.7rem 1rem 0.55rem; border-radius: 18px; background: #fafbfc; border: 1px solid #eef0f3; cursor: text; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
 .cd-amount:focus-within { background: #fff; border-color: #f19a9e; box-shadow: 0 0 0 4px rgba(239, 28, 38, 0.1); }
 .cd-amount input, .cd-amount input:focus, .cd-amount input:hover { min-width: 1.2ch; max-width: 7ch; padding: 0; border: 0; background: none; box-shadow: none; outline: none; text-align: right; font-family: var(--display); font-size: 2.6rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; color: var(--ink); }
 .cd-amount input::placeholder { color: #d0d5dd; }
@@ -537,10 +539,17 @@ tr.picked td { background: var(--red-wash); }
 .cd-note { font-size: 0.74rem; color: var(--muted); margin: 0.35rem 0 0; text-align: center; line-height: 1.5; }
 
 /* Recent tokens: a short list, one tap to see the full token again. */
-.cd-recent { display: grid; gap: 0.25rem; margin-top: 0.85rem; padding-top: 0.9rem; border-top: 1px solid #f0f1f4; }
+.cd-recent { display: grid; gap: 0.3rem; margin-top: 0.6rem; padding-top: 0.75rem; border-top: 1px solid #f0f1f4; }
 .cd-recent .fd-label { margin: 0 0 0.2rem; }
 .cd-recent button { display: flex; align-items: center; gap: 0.7rem; width: 100%; min-height: 0; padding: 0.5rem 0.55rem; border: 1px solid transparent; border-radius: 12px; background: none; box-shadow: none; text-align: left; color: var(--ink-2); transition: background 0.2s, border-color 0.2s; }
-.cd-recent button:hover:not(:disabled) { background: #fafbfc; border-color: #eef0f3; transform: none; }
+.cd-recent button { border-color: #f0f1f4; }
+/* White surfaces in the customer card pick up a red outline on hover. */
+.cd-who, .cd-recent button, .cdesk .input-icon input { transition: border-color 0.2s, box-shadow 0.2s, background 0.2s, transform 0.2s var(--ease); }
+.cd-who:hover, .cd-amount:hover, .cdesk .input-icon input:hover:not(:focus), .cd-recent button:hover:not(:disabled) {
+  border-color: var(--red); box-shadow: 0 0 0 3px rgba(239, 28, 38, 0.08); background: #fff;
+}
+.cd-recent button:hover:not(:disabled) { transform: translateY(-1px); }
+.fd-chips button:hover { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239, 28, 38, 0.08); }
 .cd-recent i { flex: none; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: var(--red-wash); color: var(--red-ink); }
 .cd-recent i svg { fill: currentColor; }
 .cd-recent span { flex: 1; display: grid; }

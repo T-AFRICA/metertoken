@@ -24,8 +24,8 @@ interface Recent {
 
 const QUICK_UNITS = ['5', '10', '20', '50'];
 const METER_RE = /^(\d{11}|\d{13})$/;
-const STEP_TITLE = ['Sign in to your meter', 'How many units?', 'Your token is ready'];
-const STEP_HINT = ['Use the meter number and PIN Tronic gave you.', 'Pick an amount or type your own.', 'Type it on your meter keypad, then press Enter.'];
+const STEP_NAME = ['Sign in', 'Units', 'Token'];
+const STEP_HINT = ['Sign in with your meter number and PIN.', 'Choose how many units you need.', 'Your token is ready — type it on your meter.'];
 
 /**
  * A registered customer's own token desk: meter number + PIN, then units, then the token.
@@ -161,14 +161,12 @@ export function CustomerDesk() {
   return (
     <div className="cdesk">
       <div className="cd-head">
-        <div>
-          <span className="cd-kicker"><Icon name="bolt" size={13} /> Tronic prepaid</span>
-          <h3>{STEP_TITLE[step - 1]}</h3>
-          <p>{STEP_HINT[step - 1]}</p>
-        </div>
-        <div className="cd-progress" role="img" aria-label={`Step ${step} of 3`}>
-          <span>{step}/3</span>
-          <div>{[1, 2, 3].map((i) => <i key={i} className={i < step ? 'done' : i === step ? 'on' : ''} />)}</div>
+        <span className="cd-badge" aria-hidden="true"><Icon name="bolt" size={20} /></span>
+        <span className="cd-kicker">Tronic prepaid</span>
+        <h3>Token <em>Issuer</em></h3>
+        <p key={step}>{STEP_HINT[step - 1]}</p>
+        <div className="cd-progress" role="img" aria-label={`Step ${step} of 3: ${STEP_NAME[step - 1]}`}>
+          {[1, 2, 3].map((i) => <i key={i} className={i < step ? 'done' : i === step ? 'on' : ''} />)}
         </div>
       </div>
 
@@ -238,7 +236,7 @@ export function CustomerDesk() {
           {recent.length > 0 && (
             <div className="cd-recent">
               <span className="fd-label">Recent tokens</span>
-              {recent.slice(0, 3).map((r) => (
+              {recent.slice(0, 2).map((r) => (
                 <button type="button" key={r.id} onClick={() => showRecent(r.id)} disabled={r.status !== 'SUCCEEDED'}>
                   <i><Icon name="bolt" size={13} /></i>
                   <span>

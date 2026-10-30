@@ -66,7 +66,6 @@ export default function LoginPage() {
         </div>
         <div className="login-pitch">
           <CustomerDesk />
-          <p className="flow-caption"><b>Registered customer?</b> Generate your token here with your meter number and PIN.</p>
         </div>
         <div className="login-foot">
           <span>Tronic Kenya · Nairobi</span>
