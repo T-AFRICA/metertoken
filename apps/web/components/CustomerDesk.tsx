@@ -50,6 +50,12 @@ export function CustomerDesk() {
   const [requote, setRequote] = useState(0);
   const idemKey = useRef('');
   const quoteSeq = useRef(0);
+  // A password field makes browsers treat this card as a staff login and fill in saved staff details.
+  // Where the browser can mask a plain text field, the PIN uses one; otherwise a "new password" field, which is never autofilled.
+  const [pinProps, setPinProps] = useState<{ type: string; autoComplete: string; className?: string }>({ type: 'password', autoComplete: 'new-password' });
+  useEffect(() => {
+    if (CSS.supports('-webkit-text-security', 'disc')) setPinProps({ type: 'text', autoComplete: 'off', className: 'pin-mask' });
+  }, []);
 
   const call = <T,>(path: string, method: 'GET' | 'POST' = 'GET', body?: unknown, headers: Record<string, string> = {}) =>
     api<T>(path, { method, body, headers: { ...(session ? { 'x-csrf-token': session.csrfToken } : {}), ...headers } });
@@ -174,13 +180,13 @@ export function CustomerDesk() {
           <label className="fd-label" htmlFor="cd-meter">Meter number</label>
           <div className="input-icon">
             <Icon name="meter" size={18} />
-            <input id="cd-meter" inputMode="numeric" autoComplete="off" placeholder="11 or 13 digits" maxLength={13}
+            <input id="cd-meter" name="tronic-meter" inputMode="numeric" autoComplete="off" data-1p-ignore data-lpignore="true" placeholder="11 or 13 digits" maxLength={13}
               value={meterNo} onChange={(e) => setMeterNo(e.target.value.replace(/\D/g, ''))} required />
           </div>
           <label className="fd-label" htmlFor="cd-pin">PIN</label>
           <div className="input-icon">
             <Icon name="lock" size={18} />
-            <input id="cd-pin" type="password" inputMode="numeric" autoComplete="off" placeholder="4–6 digits" maxLength={6}
+            <input id="cd-pin" name="tronic-pin" {...pinProps} inputMode="numeric" data-1p-ignore data-lpignore="true" placeholder="4–6 digits" maxLength={6}
               value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))} required />
           </div>
           {error && <div className="cd-error"><Icon name="alert" size={14} /> {error}</div>}

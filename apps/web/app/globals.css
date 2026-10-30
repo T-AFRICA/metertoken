@@ -505,6 +505,7 @@ tr.picked td { background: var(--red-wash); }
 /* Customer desk: real sign-in, units and token for registered customers. */
 .cd-form { display: grid; gap: 0.5rem; }
 .cd-form .fd-label { margin: 0.3rem 0 0; }
+.pin-mask { -webkit-text-security: disc; }
 .cdesk .input-icon input { height: 2.9rem; border-radius: 12px; }
 .cd-btn { display: flex; align-items: center; justify-content: center; gap: 0.45rem; width: 100%; height: 2.9rem; border-radius: 12px; margin-top: 0.35rem; font-weight: 600; }
 .cdesk button.primary.cd-btn:not(:disabled) { background: linear-gradient(180deg, #e3252d 0%, #c5131b 100%); border-color: #b5111a; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 10px 20px -10px rgba(215, 25, 32, 0.6); }
