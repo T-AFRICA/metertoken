@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { api, errorText } from '@/lib/api';
+import { statusLabel } from '@/lib/types';
 
 interface Row {
   day: string;
@@ -75,7 +76,7 @@ export default function ReportsPage() {
               <tr key={i}>
                 <td data-label="Day">{r.day}</td>
                 <td data-label="Operator">{r.operator}</td>
-                <td data-label="Status"><span className={`badge ${r.status}`}>{r.status}</span></td>
+                <td data-label="Status"><span className={`badge ${r.status}`}>{statusLabel(r.status)}</span></td>
                 <td className="num" data-label="Count">{r.count}</td>
                 <td className="num" data-label="kWh">{r.units}</td>
                 <td className="num" data-label="Amount">{r.currency} {Number(r.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>

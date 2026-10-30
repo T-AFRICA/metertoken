@@ -4,6 +4,8 @@ const API_URL = process.env.API_URL ?? 'http://127.0.0.1:4000';
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The floating dev badge sits over the sidebar's sign-out button.
+  devIndicators: false,
   // The browser only ever talks to this origin; /api is proxied to the portal API server.
   async rewrites() {
     return [{ source: '/api/:path*', destination: `${API_URL}/api/:path*` }];

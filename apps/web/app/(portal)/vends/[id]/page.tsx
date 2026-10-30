@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Receipt } from '@/components/Receipt';
 import { api, errorText } from '@/lib/api';
-import { formatDate, isSupervisor, type Vend } from '@/lib/types';
+import { formatDate, isSupervisor, statusLabel, type Vend } from '@/lib/types';
 import { useSession } from '../../session';
 
 export default function VendDetailPage() {
@@ -64,7 +64,7 @@ export default function VendDetailPage() {
     <div className="grid2">
       <div className="card no-print">
         <h1>
-          Transaction <span className={`badge ${vend.status}`}>{vend.status}</span>
+          Transaction <span className={`badge ${vend.status}`}>{statusLabel(vend.status)}</span>
         </h1>
         <table className="breakdown">
           <tbody>

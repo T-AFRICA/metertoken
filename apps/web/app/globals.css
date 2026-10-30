@@ -17,7 +17,11 @@
   --red: #ef1c26;
   --red-ink: #c4121b;
   --red-wash: #fdeceb;
-  --red-panel: linear-gradient(180deg, var(--red) 0%, #d8141d 60%, #b80f17 100%);
+  /* Brand red under white text fails WCAG AA (4.3:1); buttons and panels
+     use a deeper red so small white text clears 5:1. */
+  --red-btn: #d71920;
+  --red-btn-hover: #b8141b;
+  --red-panel: linear-gradient(180deg, #d4161f 0%, #b9121a 55%, #9e0e15 100%);
 
   --night: #151311;
   --night-2: #1d1a17;
@@ -76,7 +80,7 @@ code { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2)
 .nav-label { font-size: 0.78rem; color: var(--side-muted); padding: 0 0.6rem 0.4rem; }
 .nav-item {
   display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0.6rem; border-radius: 7px;
-  color: var(--side-text); text-decoration: none; font-weight: 600; font-size: 0.93rem; position: relative;
+  color: var(--side-text); text-decoration: none; font-weight: 500; font-size: 0.93rem; position: relative;
   transition: background 0.15s, color 0.15s;
 }
 .nav-item svg { opacity: 0.75; flex: none; }
@@ -200,8 +204,8 @@ button, .button {
 }
 button:hover, .button:hover { background: var(--surface-2); border-color: var(--ink-2); }
 button:active { transform: translateY(1px); }
-button.primary, .button.primary { background: var(--red); color: #fff; border-color: var(--red); }
-button.primary:hover, .button.primary:hover { background: var(--red-ink); border-color: var(--red-ink); }
+button.primary, .button.primary { background: var(--red-btn); color: #fff; border-color: var(--red-btn); }
+button.primary:hover, .button.primary:hover { background: var(--red-btn-hover); border-color: var(--red-btn-hover); }
 button.ink, .button.ink { background: var(--ink); color: #fff; border-color: var(--ink); }
 button.ink:hover, .button.ink:hover { background: #000; }
 button.danger { background: var(--danger); color: #fff; border-color: var(--danger); }
@@ -257,8 +261,9 @@ td.nowrap, .nowrap { white-space: nowrap; }
 .stat { padding: 1.2rem 1.4rem 1.3rem; border-left: 1px solid var(--line); }
 .stat:first-child { border-left: 0; }
 @media (max-width: 1000px) { .stat:nth-child(3) { border-left: 0; } .stat:nth-child(n+3) { border-top: 1px solid var(--line); } }
-.stat .k { color: var(--muted); font-size: 0.84rem; font-weight: 600; }
-.stat .k svg { display: none; }
+.stat .k { color: var(--muted); font-size: 0.84rem; font-weight: 600; display: flex; align-items: center; gap: 0.6rem; }
+.stat .k svg { flex: none; width: 30px; height: 30px; padding: 7px; border-radius: 9px; background: var(--red-wash); color: var(--red-ink); stroke-width: 2; }
+.stat.warn .k svg { background: var(--amber-wash); color: var(--amber); }
 .stat { min-width: 0; }
 .stat .v { font-family: var(--display); font-weight: 700; font-size: clamp(1.35rem, 2.1vw, 2rem); letter-spacing: -0.02em; overflow-wrap: anywhere; line-height: 1; margin-top: 0.55rem; font-variant-numeric: tabular-nums; }
 .stat.warn .v { color: var(--red); }
@@ -292,6 +297,7 @@ td.nowrap, .nowrap { white-space: nowrap; }
 .quick { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
 .quick button { padding: 0.4rem 0.85rem; font-size: 0.84rem; border-radius: 999px; background: var(--surface-2); }
 .quick button.on { background: var(--red-wash); border-color: var(--red); color: var(--red-ink); }
+.quick button:disabled { opacity: 0.6; }
 .link-quiet { font-size: 0.86rem; font-weight: 600; color: var(--red); text-decoration: none; }
 .link-quiet:hover { text-decoration: underline; }
 .summary-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
@@ -317,7 +323,7 @@ td.nowrap, .nowrap { white-space: nowrap; }
 }
 .token-box .tl { display: flex; justify-content: center; align-items: center; gap: 0.5rem; font-family: var(--font); font-size: 0.78rem; letter-spacing: 0.04em; color: var(--night-muted); margin-bottom: 0.7rem; font-weight: 700; }
 .token-box .tl::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
-.token-box.mock { background: repeating-linear-gradient(135deg, var(--amber-wash) 0 12px, #f7e9c9 12px 24px); color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber-line); }
+.token-box.mock { background: #fffbf2; color: var(--ink-2); box-shadow: none; border: 1.5px dashed var(--amber-line); }
 .token-box.mock .tl { color: var(--amber); }
 .token-box.mock .tl::before { background: var(--amber); }
 .result-head { display: flex; align-items: center; gap: 0.75rem; }
@@ -337,7 +343,7 @@ td.nowrap, .nowrap { white-space: nowrap; }
 .login-brand .wordmark span { color: rgba(255, 255, 255, 0.7); }
 .login-mobile-logo { display: none; width: 150px; height: auto; margin-bottom: 1.75rem; }
 .login-brand h2 { font-family: var(--display); font-weight: 800; font-size: 2.9rem; line-height: 1.08; letter-spacing: -0.03em; color: #fff; margin: 0 0 1.25rem; max-width: 13ch; }
-.login-brand h2 em { color: var(--ink); font-style: normal; }
+.login-brand h2 em { color: #fff; font-style: normal; background: var(--ink); padding: 0 0.18em; border-radius: 8px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .login-brand p { color: rgba(255, 255, 255, 0.8); max-width: 40ch; margin: 0; font-size: 1rem; }
 .meter-face {
   margin-top: 2.5rem; max-width: 340px; border-radius: 14px; padding: 1rem 1rem 0.9rem;
@@ -424,7 +430,7 @@ main > *:nth-child(n+5) { animation-delay: 0.24s; }
 /* Buttons: lift, red glow on the main action, firm press. */
 button, .button { transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s var(--ease), box-shadow 0.25s var(--ease); }
 button:not(:disabled):hover, .button:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(23, 20, 18, 0.08); }
-button.primary:not(:disabled):hover, .button.primary:hover { box-shadow: 0 8px 22px rgba(239, 28, 38, 0.32); }
+button.primary:not(:disabled):hover, .button.primary:hover { box-shadow: 0 8px 22px rgba(215, 25, 32, 0.3); }
 button.ink:not(:disabled):hover, .button.ink:hover { box-shadow: 0 8px 22px rgba(23, 20, 18, 0.25); }
 button:not(:disabled):active, .button:active { transform: translateY(0) scale(0.98); box-shadow: none; }
 button svg, .button svg { transition: transform 0.25s var(--ease); }

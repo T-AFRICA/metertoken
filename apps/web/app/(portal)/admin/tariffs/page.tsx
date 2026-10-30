@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api, errorText } from '@/lib/api';
-import { formatDate } from '@/lib/types';
+import { formatDate, statusLabel } from '@/lib/types';
 import { useSession } from '../../session';
 
 interface Charge {
@@ -102,7 +102,7 @@ export default function TariffsPage() {
               <tbody>
                 {t.versions.map((v) => (
                   <tr key={v.id}>
-                    <td><span className={`badge ${v.status}`}>{v.status}</span></td>
+                    <td><span className={`badge ${v.status}`}>{statusLabel(v.status)}</span></td>
                     <td className="num">{v.baseRate}</td>
                     <td>
                       {[...v.percentCharges.map((c) => `${c.name} ${c.percent}%`), ...v.fixedCharges.map((c) => `${c.name} ${c.amount}`)].join(', ') || '—'}

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { Receipt } from '@/components/Receipt';
 import { api, ApiError, errorText } from '@/lib/api';
-import { formatToken, isSupervisor, type Quote, type Vend, type VendStatus } from '@/lib/types';
+import { formatToken, isSupervisor, statusLabel, type Quote, type Vend, type VendStatus } from '@/lib/types';
 import { useSession } from '../session';
 
 type Mode = 'units' | 'amount';
@@ -162,7 +162,7 @@ export default function VendPage() {
               </div>
               <div>
                 <b>{ok ? 'Read these digits to the customer, or print the receipt.' : open ? 'The vendor didn’t give a clear answer.' : 'Nothing was charged to the meter.'}</b>
-                <div className="hint"><span className={`badge ${vend.status}`}>{vend.status}</span></div>
+                <div className="hint"><span className={`badge ${vend.status}`}>{statusLabel(vend.status)}</span></div>
               </div>
             </div>
 
@@ -232,10 +232,10 @@ export default function VendPage() {
       </div>
 
       <div className="grid4">
-        <div className="stat"><div className="k">{own ? 'Your tokens' : 'Tokens'} today</div><div className="v">{recent ? sold.length : '–'}</div></div>
-        <div className="stat"><div className="k">{own ? 'Your sales' : 'Sales'} today ({me.currency})</div><div className="v">{recent ? money(sold.reduce((s, r) => s + Number(r.amount), 0)) : '–'}</div></div>
-        <div className="stat"><div className="k">Units sold (kWh)</div><div className="v">{recent ? sold.reduce((s, r) => s + Number(r.units), 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '–'}</div></div>
-        <div className={`stat ${attention ? 'warn' : ''}`}><div className="k">Need attention</div><div className="v">{recent ? attention : '–'}</div></div>
+        <div className="stat"><div className="k"><Icon name="bolt" size={28} />{own ? 'Your tokens' : 'Tokens'} today</div><div className="v">{recent ? sold.length : '–'}</div></div>
+        <div className="stat"><div className="k"><Icon name="chart" size={28} />{own ? 'Your sales' : 'Sales'} today ({me.currency})</div><div className="v">{recent ? money(sold.reduce((s, r) => s + Number(r.amount), 0)) : '–'}</div></div>
+        <div className="stat"><div className="k"><Icon name="meter" size={28} />Units sold (kWh)</div><div className="v">{recent ? sold.reduce((s, r) => s + Number(r.units), 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) : '–'}</div></div>
+        <div className={`stat ${attention ? 'warn' : ''}`}><div className="k"><Icon name="alert" size={28} />Need attention</div><div className="v">{recent ? attention : '–'}</div></div>
       </div>
 
       <div className="vend-layout">
@@ -260,7 +260,7 @@ export default function VendPage() {
                     placeholder="11 or 13 digits"
                     aria-label="Meter number"
                   />
-                  <button className="ink" onClick={verify} disabled={!meterNo || verifying}>
+                  <button className="ink" onClick={verify} disabled={verifying}>
                     <Icon name="search" size={16} /> {verifying ? 'Checking…' : 'Verify'}
                   </button>
                 </div>
@@ -325,7 +325,7 @@ export default function VendPage() {
                       <td className="mono" data-label="Meter">{r.meterNo}</td>
                       <td className="num" data-label="kWh">{r.units}</td>
                       <td className="num" data-label="Amount">{r.currency} {money(Number(r.amount))}</td>
-                      <td data-label="Status"><span className={`badge ${r.status}`}>{r.status}</span></td>
+                      <td data-label="Status"><span className={`badge ${r.status}`}>{statusLabel(r.status)}</span></td>
                     </tr>
                   ))}
                   {recent && recent.length === 0 && (

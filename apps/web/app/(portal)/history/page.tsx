@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { api, errorText } from '@/lib/api';
-import { formatDate, type VendStatus } from '@/lib/types';
+import { formatDate, statusLabel, type VendStatus } from '@/lib/types';
 
 interface Row {
   id: string;
@@ -64,7 +64,7 @@ export default function HistoryPage() {
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">All</option>
             {STATUSES.map((s) => (
-              <option key={s}>{s}</option>
+              <option key={s} value={s}>{statusLabel(s)}</option>
             ))}
           </select>
         </div>
@@ -110,7 +110,7 @@ export default function HistoryPage() {
                 <td className="num" data-label="kWh">{r.units}</td>
                 <td className="num" data-label="Amount">{r.currency} {r.amount}</td>
                 <td data-label="Status">
-                  <span className={`badge ${r.status}`}>{r.status}</span>{' '}
+                  <span className={`badge ${r.status}`}>{statusLabel(r.status)}</span>{' '}
                   {r.adapterMode === 'mock' && <span className="badge mock">MOCK</span>}
                 </td>
                 <td className="mono" data-label="Token">{r.tokenLast4 ? `•••• ${r.tokenLast4}` : '—'}</td>
