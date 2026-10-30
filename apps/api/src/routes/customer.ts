@@ -70,7 +70,7 @@ export function customerRoutes(app: FastifyInstance, ctx: AppContext) {
     const body = z.object({ meterNo: meterNoSchema, pin: pinSchema }).parse(req.body);
     const f = failures.get(body.meterNo);
     if (f && f.count >= MAX_FAILURES && Date.now() - f.first < LOCKOUT_MS) {
-      throw new HttpError(429, 'LOCKED', 'Too many wrong PINs. Try again in 15 minutes, or ask a Tronic counter to reset your PIN.');
+      throw new HttpError(429, 'LOCKED', 'Too many wrong PINs. Try again in 15 minutes, or ask your landlord to reset your PIN.');
     }
     const row = (await ctx.db.query<{ id: string; pin_hash: string }>('SELECT id, pin_hash FROM customers WHERE meter_no = $1 AND active', [body.meterNo])).rows[0];
     const ok = await verify(row?.pin_hash ?? (await dummyHash), body.pin).catch(() => false);

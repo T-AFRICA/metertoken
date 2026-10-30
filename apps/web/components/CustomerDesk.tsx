@@ -25,11 +25,11 @@ interface Recent {
 const QUICK_UNITS = ['5', '10', '20', '50'];
 const METER_RE = /^(\d{11}|\d{13})$/;
 const STEP_NAME = ['Sign in', 'Units', 'Token'];
-const STEP_HINT = ['Sign in with your meter number and PIN.', 'Choose how many units you need.', 'Your token is ready — type it on your meter.'];
+const STEP_HINT = ['Sign in with your meter number and the PIN your landlord gave you.', 'Choose how many units you need.', 'Your token is ready — type it on your meter.'];
 
 /**
- * A registered customer's own token desk: meter number + PIN, then units, then the token.
- * Payment is settled with the tenant outside the portal; the server checks everything again.
+ * A registered tenant's own token desk: meter number + PIN, then units, then the token.
+ * The tenant pays their landlord outside the portal; the server checks everything again.
  */
 export function CustomerDesk() {
   const [session, setSession] = useState<Session | null>(null);
@@ -190,7 +190,7 @@ export function CustomerDesk() {
           <button className="primary cd-btn" disabled={busy || !METER_RE.test(meterNo) || pin.length < 4}>
             {busy ? <><span className="spinner" /> Checking…</> : <>Continue <Icon name="arrow" size={16} /></>}
           </button>
-          <p className="cd-note">Not registered yet? Ask Tronic to register your meter and give you a PIN.</p>
+          <p className="cd-note">Not registered yet? Ask your landlord to register your meter and give you a PIN.</p>
         </form>
       ) : !vend ? (
         <div className="cd-form" key="units">
@@ -281,7 +281,7 @@ export function CustomerDesk() {
             <div className="cd-state">
               <Icon name="history" size={22} />
               <b>We’re confirming your token</b>
-              <span>The vendor did not answer in time. Tronic staff will check it — please don’t generate another token for this meter yet. Reference {vend.reference.slice(0, 8).toUpperCase()}.</span>
+              <span>The vendor did not answer in time. Your landlord or Tronic will check it — please don’t generate another token for this meter yet. Reference {vend.reference.slice(0, 8).toUpperCase()}.</span>
             </div>
           )}
           <button type="button" className="cd-link" onClick={another}><Icon name="back" size={14} /> Generate another token</button>

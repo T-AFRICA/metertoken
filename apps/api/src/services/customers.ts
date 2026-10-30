@@ -34,6 +34,6 @@ export function customerView(c: CustomerRow) {
 /** Customer purchases go through createVend as this account; it can never sign in. */
 export async function selfServiceUser(q: Queryable): Promise<SessionUser> {
   const row = (await q.query<{ id: string; display_name: string }>('SELECT id, display_name FROM users WHERE username = $1', [SELF_SERVICE_USERNAME])).rows[0];
-  if (!row) throw new HttpError(500, 'SELF_SERVICE_MISSING', 'Customer self-service is not set up. Run the database migrations.');
+  if (!row) throw new HttpError(500, 'SELF_SERVICE_MISSING', 'Tenant self-service is not set up. Run the database migrations.');
   return { id: row.id, username: SELF_SERVICE_USERNAME, displayName: row.display_name, role: 'cashier', sessionId: '', csrfToken: '' };
 }

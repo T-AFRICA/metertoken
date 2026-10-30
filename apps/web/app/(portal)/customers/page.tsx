@@ -91,23 +91,23 @@ export default function CustomersPage() {
   async function resetPin(e: React.FormEvent) {
     e.preventDefault();
     if (!selected) return;
-    if (await run(() => api(`/api/customers/${selected.id}`, { method: 'PATCH', body: { pin: newPin } }), 'PIN changed. The customer was signed out everywhere.')) setNewPin('');
+    if (await run(() => api(`/api/customers/${selected.id}`, { method: 'PATCH', body: { pin: newPin } }), 'PIN changed. The tenant was signed out everywhere.')) setNewPin('');
   }
 
   const toggleActive = (c: Customer) =>
-    run(() => api(`/api/customers/${c.id}`, { method: 'PATCH', body: { active: !c.active } }), c.active ? 'Customer deactivated and signed out.' : 'Customer reactivated.');
+    run(() => api(`/api/customers/${c.id}`, { method: 'PATCH', body: { active: !c.active } }), c.active ? 'Tenant deactivated and signed out.' : 'Tenant reactivated.');
 
   return (
     <>
       <div className="page-head">
         <div>
           <div className="eyebrow">Vending</div>
-          <h1>Customers</h1>
-          <p className="subtitle">Registered customers generate their own tokens with their meter number and PIN. Payment is settled with the tenant.</p>
+          <h1>Tenants</h1>
+          <p className="subtitle">Registered tenants generate their own tokens with their meter number and PIN, and pay their landlord.</p>
         </div>
         {manage && (
           <button className="ink" onClick={() => setShowForm((v) => !v)}>
-            <Icon name={showForm ? 'x' : 'plus'} size={16} /> {showForm ? 'Close' : 'Register customer'}
+            <Icon name={showForm ? 'x' : 'plus'} size={16} /> {showForm ? 'Close' : 'Register tenant'}
           </button>
         )}
       </div>
@@ -117,14 +117,14 @@ export default function CustomersPage() {
 
       {showForm && (
         <form className="card reg-form" onSubmit={register}>
-          <h2>Register a customer</h2>
+          <h2>Register a tenant</h2>
           <div className="reg-grid">
             <div className="field"><label>Meter number</label><input className="mono" inputMode="numeric" maxLength={13} value={form.meterNo} onChange={(e) => setForm({ ...form, meterNo: e.target.value.replace(/\D/g, '') })} required /></div>
-            <div className="field"><label>Customer name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
+            <div className="field"><label>Tenant name</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></div>
             <div className="field"><label>Phone (optional)</label><input inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
             <div className="field"><label>PIN (4–6 digits)</label><input inputMode="numeric" maxLength={6} value={form.pin} onChange={(e) => setForm({ ...form, pin: e.target.value.replace(/\D/g, '') })} required /></div>
           </div>
-          <p className="hint">Tell the customer their PIN privately. They sign in at <b>/token</b> (or on the sign-in page) with their meter number and this PIN.</p>
+          <p className="hint">Tell the tenant their PIN privately. They sign in at <b>/token</b> (or on the sign-in page) with their meter number and this PIN.</p>
           <button className="primary" disabled={busy}><Icon name="check" size={16} /> Register</button>
         </form>
       )}
@@ -132,7 +132,7 @@ export default function CustomersPage() {
       <div className="cust-layout">
         <div className="card flush">
           <div className="card-head">
-            <h2>All customers</h2>
+            <h2>All tenants</h2>
             <div className="input-icon cust-search">
               <Icon name="search" size={16} />
               <input placeholder="Meter, name or phone" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -153,7 +153,7 @@ export default function CustomersPage() {
                     <td data-label="Status"><span className={`badge ${c.active ? 'SUCCEEDED' : 'FAILED'}`}>{c.active ? 'Active' : 'Inactive'}</span></td>
                   </tr>
                 ))}
-                {loaded && items.length === 0 && <tr><td colSpan={4} className="empty">{search ? 'No customer matches that search.' : 'No customers yet. Register the first one above.'}</td></tr>}
+                {loaded && items.length === 0 && <tr><td colSpan={4} className="empty">{search ? 'No tenant matches that search.' : 'No tenants yet. Register the first one above.'}</td></tr>}
               </tbody>
             </table>
           </div>
@@ -163,7 +163,7 @@ export default function CustomersPage() {
           {!selected ? (
             <div className="cust-empty">
               <Icon name="wallet" size={28} />
-              <b>Pick a customer</b>
+              <b>Pick a tenant</b>
               <span>See their tokens, reset their PIN or deactivate them.</span>
             </div>
           ) : (

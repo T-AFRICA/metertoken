@@ -35,11 +35,11 @@ const ACTION_TONE: Record<string, string> = {
 
 const ACTION_LABEL: Record<string, string> = {
   'vend.requested': 'Vend requested',
-  'customer.registered': 'Customer registered',
-  'customer.updated': 'Customer changed',
-  'customer.login': 'Customer signed in',
-  'customer.login_failed': 'Customer sign-in failed',
-  'customer.token_viewed': 'Customer viewed token',
+  'customer.registered': 'Tenant registered',
+  'customer.updated': 'Tenant changed',
+  'customer.login': 'Tenant signed in',
+  'customer.login_failed': 'Tenant sign-in failed',
+  'customer.token_viewed': 'Tenant viewed token',
   'vend.succeeded': 'Token issued',
   'vend.failed': 'Vend failed',
   'vend.unknown': 'Result unknown',
@@ -136,7 +136,7 @@ export default function AuditPage() {
       <div className="card flush">
         <div className="card-head">
           <div className="segmented">
-            {[['', 'All'], ['vend.', 'Vends'], ['auth.', 'Sign-ins'], ['tariff.', 'Tariffs'], ['customer.', 'Customers'], ['user.', 'Users'], ['receipt.', 'Receipts']].map(([p, label]) => (
+            {[['', 'All'], ['vend.', 'Vends'], ['auth.', 'Sign-ins'], ['tariff.', 'Tariffs'], ['customer.', 'Tenants'], ['user.', 'Users'], ['receipt.', 'Receipts']].map(([p, label]) => (
               <button key={p} className={action === p ? 'on' : ''} onClick={() => { setAction(p!); load(p); }}>{label}</button>
             ))}
           </div>
@@ -152,7 +152,7 @@ export default function AuditPage() {
               {events.map((e) => (
                 <tr key={e.id}>
                   <td className="nowrap muted">{formatDate(e.at)}</td>
-                  <td className="nowrap">{e.actor === 'system' && e.action.startsWith('customer.') ? 'Customer' : e.actor}</td>
+                  <td className="nowrap">{e.actor === 'system' && e.action.startsWith('customer.') ? 'Tenant' : e.actor}</td>
                   <td className="nowrap">
                     <span className={`badge ${ACTION_TONE[e.action] ?? 'PENDING'}`}>{actionLabel(e.action)}</span>
                   </td>

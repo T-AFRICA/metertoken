@@ -40,7 +40,7 @@ export default function VendDetailPage() {
       const r = await api<{ result: string }>(`/api/vends/${id}/check-status`, { method: 'POST' });
       setInfo(
         r.result === 'unsupported'
-          ? 'The vendor API has no status check. Look up this meter in the vendor system, or ask the customer to read the last tokens on the meter (short code 50).'
+          ? 'The vendor API has no status check. Look up this meter in the vendor system, or ask the tenant to read the last tokens on the meter (short code 50).'
           : `Status check: ${r.result}`,
       );
       load();

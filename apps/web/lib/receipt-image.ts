@@ -167,7 +167,7 @@ export async function downloadTokenReceipt(vend: Vend, customerName: string) {
   // Details
   const amount = `${vend.currency} ${Number(vend.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const rows: [string, string][] = [
-    ['Customer', customerName],
+    ['Tenant', customerName],
     ['Meter number', groupMeter(vend.meterNo)],
     ['Units', `${vend.units} kWh`],
     ['Date', new Date(vend.createdAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })],

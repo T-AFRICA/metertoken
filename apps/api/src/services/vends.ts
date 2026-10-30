@@ -103,7 +103,7 @@ function checkResult(ctx: AppContext, v: VendRow, r: IssueResult): string | null
 /** A customer may only generate tokens for their own meter, and only while their account is active. */
 async function checkCustomerMeter(q: Queryable, customerId: string, meterNo: string) {
   const c = (await q.query<{ meter_no: string; active: boolean }>('SELECT meter_no, active FROM customers WHERE id = $1', [customerId])).rows[0];
-  if (!c || !c.active) throw new HttpError(403, 'CUSTOMER_INACTIVE', 'This customer account is not active');
+  if (!c || !c.active) throw new HttpError(403, 'CUSTOMER_INACTIVE', 'This tenant account is not active');
   if (c.meter_no !== meterNo) throw new HttpError(404, 'QUOTE_NOT_FOUND', 'Quote not found');
 }
 

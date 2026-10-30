@@ -154,7 +154,7 @@ export default function VendPage() {
             <div className="eyebrow">Ref {vend.reference.slice(0, 8).toUpperCase()}</div>
             <h1>{ok ? 'Here’s the token.' : open ? 'We’re not sure yet.' : 'No token was issued.'}</h1>
           </div>
-          <button onClick={reset}><Icon name="plus" size={16} /> Next customer</button>
+          <button onClick={reset}><Icon name="plus" size={16} /> Next tenant</button>
         </div>
         <div className="grid2">
           <div className="card no-print">
@@ -163,7 +163,7 @@ export default function VendPage() {
                 <Icon name={ok ? 'check' : open ? 'alert' : 'x'} size={22} />
               </div>
               <div>
-                <b>{ok ? 'Read these digits to the customer, or print the receipt.' : open ? 'The vendor didn’t give a clear answer.' : 'Nothing was charged to the meter.'}</b>
+                <b>{ok ? 'Read these digits to the tenant, or print the receipt.' : open ? 'The vendor didn’t give a clear answer.' : 'Nothing was charged to the meter.'}</b>
                 <div className="hint"><span className={`badge ${vend.status}`}>{statusLabel(vend.status)}</span></div>
               </div>
             </div>
@@ -396,7 +396,7 @@ export default function VendPage() {
           </div>
           <dl className="kv summary-kv">
             <dt>Meter</dt><dd className="mono">{meter?.valid ? meterNo : '—'}</dd>
-            <dt>Customer</dt><dd>{meter?.valid ? meter.customerName ?? '—' : '—'}</dd>
+            <dt>Tenant</dt><dd>{meter?.valid ? meter.customerName ?? '—' : '—'}</dd>
             <dt>Units</dt><dd>{quote ? `${quote.units} kWh` : '—'}</dd>
           </dl>
           {quote && (

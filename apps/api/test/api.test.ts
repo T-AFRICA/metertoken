@@ -262,7 +262,7 @@ describe('customer self-service', () => {
     expect(list.items[0].tokenLast4).toBeTruthy();
     // Staff see the token under the self-service account and on the customer's record.
     const staff = (await call(supervisor, 'GET', `/api/vends/${body.vend.id}`)).json();
-    expect(staff.operator).toBe('Customer self-service');
+    expect(staff.operator).toBe('Tenant self-service');
     const record = (await call(cashier, 'GET', `/api/customers/${id}/vends`)).json();
     expect(record.items[0].id).toBe(body.vend.id);
     expect(record.month.count).toBe(1);

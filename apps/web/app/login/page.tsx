@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [done, setDone] = useState(false);
   const [shake, setShake] = useState(false);
   const usernameRef = useRef<HTMLInputElement>(null);
-  // Phones show one form at a time; a switch at the top picks customer or staff.
+  // Phones show one form at a time; a switch at the top picks tenant or landlord.
   const [isPhone, setIsPhone] = useState(false);
   const [view, setView] = useState<'customer' | 'staff'>('staff');
 
@@ -87,7 +87,7 @@ export default function LoginPage() {
         <div className="login-pitch">{!isPhone && <CustomerDesk />}</div>
         <div className="login-foot">
           <span>Tronic Tanzania · Dar es Salaam</span>
-          <span>Agents and registered customers</span>
+          <span>Landlords and tenants</span>
         </div>
         {/* Rings that radiate out from the sun, like the one in the logo. */}
         <div className="radiate" aria-hidden="true"><i /><i /><i /></div>
@@ -98,10 +98,10 @@ export default function LoginPage() {
           <div className="login-switch" role="tablist" aria-label="Sign in as">
             <span className={`login-switch-pill ${view}`} aria-hidden="true" />
             <button type="button" role="tab" aria-selected={view === 'customer'} className={view === 'customer' ? 'on' : ''} onClick={() => pick('customer')}>
-              <Icon name="bolt" size={16} /> Customer
+              <Icon name="bolt" size={16} /> Tenant
             </button>
             <button type="button" role="tab" aria-selected={view === 'staff'} className={view === 'staff' ? 'on' : ''} onClick={() => pick('staff')}>
-              <Icon name="user" size={16} /> Staff
+              <Icon name="user" size={16} /> Landlord
             </button>
           </div>
         )}
@@ -114,7 +114,7 @@ export default function LoginPage() {
           <div className="login-head">
             <span className="login-badge" aria-hidden="true"><Icon name="bolt" size={24} /></span>
             <h1>Welcome back</h1>
-            <p className="subtitle">Sign in with the details your supervisor gave you.</p>
+            <p className="subtitle">Sign in to manage your tenants, meters and tokens.</p>
           </div>
           <div className="field">
             <label htmlFor="username">Username</label>
@@ -160,7 +160,7 @@ export default function LoginPage() {
           </button>
           <p className="fineprint">
             <Icon name="shield" size={16} />
-            <span>Every sale is logged against your name, so please don’t share your login. Forgot it? Ask your supervisor to reset it.</span>
+            <span>Every token is logged against your name, so please don’t share your login. Forgot it? Ask Tronic to reset it.</span>
           </p>
         </form>
         )}

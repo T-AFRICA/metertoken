@@ -4,7 +4,7 @@ import { CustomerDesk } from '@/components/CustomerDesk';
 
 export const metadata = { title: 'Generate token · Tronic' };
 
-/** The customer page on its own, for phones and for sharing as a link. */
+/** The tenant token page on its own, for phones and for sharing as a link. */
 export default function TokenPage() {
   return (
     <div className="token-page">
@@ -14,7 +14,7 @@ export default function TokenPage() {
       </header>
       <main>
         <CustomerDesk />
-        <Link href="/login" className="token-staff">Tronic staff? Sign in here</Link>
+        <Link href="/login" className="token-staff">Landlord? Sign in here</Link>
       </main>
       <div className="radiate" aria-hidden="true"><i /><i /><i /></div>
     </div>

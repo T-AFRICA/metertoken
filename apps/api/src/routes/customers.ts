@@ -54,7 +54,7 @@ export function customerAdminRoutes(app: FastifyInstance, ctx: AppContext) {
         return { id };
       });
     } catch (e) {
-      if (isUniqueViolation(e)) throw new HttpError(409, 'METER_TAKEN', 'A customer is already registered for this meter');
+      if (isUniqueViolation(e)) throw new HttpError(409, 'METER_TAKEN', 'A tenant is already registered for this meter');
       throw e;
     }
   });
@@ -72,7 +72,7 @@ export function customerAdminRoutes(app: FastifyInstance, ctx: AppContext) {
       .parse(req.body);
     await ctx.db.tx(async (q) => {
       const found = (await q.query('SELECT 1 FROM customers WHERE id = $1', [id])).rows[0];
-      if (!found) throw new HttpError(404, 'NOT_FOUND', 'Customer not found');
+      if (!found) throw new HttpError(404, 'NOT_FOUND', 'Tenant not found');
       if (body.name) await q.query('UPDATE customers SET name = $2 WHERE id = $1', [id, body.name]);
       if (body.phone !== undefined) await q.query('UPDATE customers SET phone = $2 WHERE id = $1', [id, body.phone || null]);
       if (body.active !== undefined) await q.query('UPDATE customers SET active = $2 WHERE id = $1', [id, body.active]);
