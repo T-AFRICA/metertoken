@@ -268,7 +268,7 @@ export default function VendPage() {
             <>
               <div className="amount-hero">
                 <div className="cur">{quote.currency}</div>
-                <div className="val">{Number(quote.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className="val" key={quote.amount}>{Number(quote.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                 <div className="sub">{quote.units} kWh · meter <span className="mono">{quote.meterNo}</span></div>
               </div>
               <table className="breakdown">
