@@ -86,7 +86,7 @@ export default function LoginPage() {
         </div>
         <div className="login-pitch">{!isPhone && <CustomerDesk />}</div>
         <div className="login-foot">
-          <span>Tronic Kenya · Nairobi</span>
+          <span>Tronic Tanzania · Dar es Salaam</span>
           <span>Agents and registered customers</span>
         </div>
         {/* Rings that radiate out from the sun, like the one in the logo. */}
@@ -166,7 +166,7 @@ export default function LoginPage() {
         )}
       </section>
       {/* Phones close the page with a short red band under the white sheet. */}
-      <footer className="login-mobile-band">Tronic Kenya · Nairobi</footer>
+      <footer className="login-mobile-band">Tronic Tanzania · Dar es Salaam</footer>
     </div>
   );
 }

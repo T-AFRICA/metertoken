@@ -19,7 +19,7 @@ flowchart LR
 ## Steps
 
 ### 1. Host the portal
-Run it on a server you control (a VPS in Nairobi or Johannesburg is fine), with:
+Run it on a server you control (a VPS in Dar es Salaam, Nairobi or Johannesburg is fine), with:
 - Node.js 22+, PostgreSQL 16, and a reverse proxy (Caddy or nginx) that provides HTTPS.
 - The API bound to `127.0.0.1:4000` (never exposed directly); the web app on `127.0.0.1:3000` behind the proxy.
 

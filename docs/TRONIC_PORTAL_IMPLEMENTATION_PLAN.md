@@ -18,7 +18,7 @@
 | Validation | Zod schemas shared between FE and API (`packages/contracts`) | |
 | Observability | pino logs with redaction, OpenTelemetry traces, health endpoints | |
 | Printing | Browser print CSS for 58 mm / 80 mm thermal + A4 PDF | ESC/POS later if needed. |
-| Deployment | Docker; HTTPS via reverse proxy (Caddy/nginx) with HSTS | Hosting in-region (e.g. Nairobi/Johannesburg) for latency and data-residency. |
+| Deployment | Docker; HTTPS via reverse proxy (Caddy/nginx) with HSTS | Hosting in-region (e.g. Dar es Salaam, Nairobi or Johannesburg) for latency and data-residency. |
 
 ### Monorepo layout
 
