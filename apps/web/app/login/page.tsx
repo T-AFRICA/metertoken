@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from '@/components/Icon';
 import { api, errorText } from '@/lib/api';
 
@@ -11,6 +11,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
+  const usernameRef = useRef<HTMLInputElement>(null);
+
+  // Focus the first field on desktop only; on phones it would pop the keyboard over the page.
+  useEffect(() => {
+    if (window.matchMedia('(pointer: fine)').matches) usernameRef.current?.focus();
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,7 +70,7 @@ export default function LoginPage() {
             <label htmlFor="username">Username</label>
             <div className="input-icon">
               <Icon name="user" size={18} />
-              <input id="username" autoComplete="username" placeholder="Your username" value={username} onChange={(e) => setUsername(e.target.value)} required autoFocus />
+              <input ref={usernameRef} id="username" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="Your username" value={username} onChange={(e) => setUsername(e.target.value)} required />
             </div>
           </div>
           <div className="field">
@@ -77,6 +84,8 @@ export default function LoginPage() {
                 placeholder="Your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyUp={(e) => setCapsLock(e.getModifierState('CapsLock'))}
+                onBlur={() => setCapsLock(false)}
                 required
               />
               <button
@@ -89,6 +98,7 @@ export default function LoginPage() {
                 <Icon name={showPassword ? 'eyeOff' : 'eye'} size={18} />
               </button>
             </div>
+            {capsLock && <div className="caps-hint"><Icon name="alert" size={14} /> Caps Lock is on</div>}
           </div>
           {error && (
             <div className="alert error">
@@ -96,7 +106,7 @@ export default function LoginPage() {
             </div>
           )}
           <button className="primary huge login-submit" disabled={busy}>
-            {busy ? 'Signing in…' : <>Sign in <Icon name="arrow" size={18} /></>}
+            {busy ? <><span className="spinner" aria-hidden /> Signing in…</> : <>Sign in <Icon name="arrow" size={18} /></>}
           </button>
           <p className="fineprint">
             <Icon name="shield" size={16} />
