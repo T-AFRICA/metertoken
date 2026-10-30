@@ -103,7 +103,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           <Link href="/vend" className="mobile-logo">
             <Image src="/tronic-logo-white.png" alt="Tronic" width={667} height={148} priority />
           </Link>
-          <span className={`env-tag ${me.adapterMode}`}><b>{me.adapterMode === 'mock' ? 'TEST' : 'LIVE'}</b></span>
+          {/* Same width as the menu button so the logo sits in the true centre. */}
+          <span className="menu-balance" aria-hidden />
         </header>
         {menuOpen && <div className="scrim" onClick={() => setMenuOpen(false)} aria-hidden />}
 
