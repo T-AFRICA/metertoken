@@ -97,12 +97,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     <SessionContext.Provider value={me}>
       <div className="shell">
         <header className="mobile-bar">
-          <button className="menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
-            <Icon name="menu" size={22} />
-          </button>
           <Link href="/vend" className="mobile-logo">
             <Image src="/tronic-logo-white.png" alt="Tronic" width={667} height={148} priority />
           </Link>
+          <button className="menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
+            <Icon name="menu" size={22} />
+          </button>
         </header>
         {menuOpen && <div className="scrim" onClick={() => setMenuOpen(false)} aria-hidden />}
 
