@@ -60,7 +60,7 @@ export default function LoginPage() {
           <Image src="/tronic-logo-white.png" alt="Tronic" width={667} height={148} priority />
           <span>Token desk</span>
         </div>
-        <div>
+        <div className="login-pitch">
           <h2>
             Keeping the lights on, <em>one token</em> at a time.
           </h2>

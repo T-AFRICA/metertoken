@@ -498,7 +498,7 @@ button.login-submit:hover svg { transform: translateX(3px); }
 /* Phones and small tablets: a compact red header, the form on a white sheet that overlaps it. */
 @media (max-width: 860px) {
   .login-split { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; background: #fff; }
-  .login-brand { padding: 1.5rem 1.5rem 3.2rem; gap: 1.35rem; justify-content: flex-start; }
+  .login-brand { padding: 2.25rem 1.5rem 3.75rem; gap: 1.35rem; justify-content: flex-start; }
   .login-brand .wordmark span { margin-top: 0.35rem; font-size: 0.72rem; }
   /* Centred header, with the rings radiating from the top centre to match. */
   .login-brand { align-items: center; text-align: center; }
@@ -511,7 +511,8 @@ button.login-submit:hover svg { transform: translateX(3px); }
     -webkit-mask-image: radial-gradient(circle at 50% 0%, #000 0, transparent 80%);
     mask-image: radial-gradient(circle at 50% 0%, #000 0, transparent 80%);
   }
-  .login-brand .meter-face, .login-brand .login-foot { display: none; }
+  /* Phones show just the logo up top; the headline and pitch stay on desktop. */
+  .login-brand .login-pitch, .login-brand .login-foot { display: none; }
   .login-brand .wordmark img { width: 148px; }
   .login-brand h2 { font-size: 1.6rem; line-height: 1.15; max-width: 18ch; margin-bottom: 0.55rem; }
   .login-brand h2 em { padding: 0 0.16em; border-radius: 7px; }
