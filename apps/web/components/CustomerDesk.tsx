@@ -24,6 +24,8 @@ interface Recent {
 
 const QUICK_UNITS = ['5', '10', '20', '50'];
 const METER_RE = /^(\d{11}|\d{13})$/;
+const STEP_TITLE = ['Sign in to your meter', 'How many units?', 'Your token is ready'];
+const STEP_HINT = ['Use the meter number and PIN Tronic gave you.', 'Pick an amount or type your own.', 'Type it on your meter keypad, then press Enter.'];
 
 /**
  * A registered customer's own token desk: meter number + PIN, then units, then the token.
@@ -149,27 +151,31 @@ export function CustomerDesk() {
 
   const step = !session ? 1 : vend ? 3 : 2;
   const c = session?.customer;
+  const initials = (c?.name ?? '')
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div className="cdesk">
-      <div className="fd-head">
-        <span className="fd-title"><Icon name="bolt" size={15} /> Generate token</span>
-        <span className="fd-tag">Customers</span>
+      <div className="cd-head">
+        <div>
+          <span className="cd-kicker"><Icon name="bolt" size={13} /> Tronic prepaid</span>
+          <h3>{STEP_TITLE[step - 1]}</h3>
+          <p>{STEP_HINT[step - 1]}</p>
+        </div>
+        <div className="cd-progress" role="img" aria-label={`Step ${step} of 3`}>
+          <span>{step}/3</span>
+          <div>{[1, 2, 3].map((i) => <i key={i} className={i < step ? 'done' : i === step ? 'on' : ''} />)}</div>
+        </div>
       </div>
 
-      <ol className="fd-steps">
-        {['Sign in', 'Units', 'Token'].map((label, i) => (
-          <li key={label} className={step > i + 1 ? 'done' : step === i + 1 ? 'on' : ''}>
-            <b>{step > i + 1 ? <Icon name="check" size={12} /> : i + 1}</b>
-            {label}
-          </li>
-        ))}
-      </ol>
-
       {checking ? (
-        <p className="cd-muted">Loading…</p>
+        <div className="cd-skeleton" aria-label="Loading"><i /><i /><i /></div>
       ) : !session ? (
-        <form onSubmit={signIn} className="cd-form">
+        <form onSubmit={signIn} className="cd-form" key="signin">
           <label className="fd-label" htmlFor="cd-meter">Meter number</label>
           <div className="input-icon">
             <Icon name="meter" size={18} />
@@ -189,34 +195,38 @@ export function CustomerDesk() {
           <p className="cd-note">Not registered yet? Ask Tronic to register your meter and give you a PIN.</p>
         </form>
       ) : !vend ? (
-        <div className="cd-form">
+        <div className="cd-form" key="units">
           <div className="cd-who">
+            <span className="cd-avatar">{initials}</span>
             <div>
               <b>{c!.name}</b>
               <span>Meter {groupMeter(c!.meterNo)}</span>
             </div>
+            <button type="button" className="cd-icon-btn" onClick={signOut} title="Sign out" aria-label="Sign out">
+              <Icon name="logout" size={16} />
+            </button>
           </div>
 
-          <label className="fd-label" htmlFor="cd-units">How many units?</label>
-          <div className="input-affix cd-units">
-            <input id="cd-units" inputMode="decimal" placeholder="e.g. 20" value={units}
-              onChange={(e) => setUnits(e.target.value.replace(/[^\d.]/g, ''))} />
+          <label className={`cd-amount ${units ? 'filled' : ''}`} htmlFor="cd-units">
+            <input id="cd-units" inputMode="decimal" placeholder="0" autoComplete="off" aria-label="Units in kWh" value={units}
+              style={{ width: `${Math.max(1, units.length) * 0.72 + 0.1}em` }}
+              onChange={(e) => setUnits(e.target.value.replace(/[^\d.]/g, '').slice(0, 7))} />
             <span>kWh</span>
-          </div>
+          </label>
           <div className="fd-chips">
             {QUICK_UNITS.map((u) => (
-              <button type="button" key={u} className={units === u ? 'sel' : ''} onClick={() => setUnits(u)}>{u} kWh</button>
+              <button type="button" key={u} className={units === u ? 'sel' : ''} onClick={() => setUnits(u)}>{u}</button>
             ))}
           </div>
 
-          <div className="cd-total">
+          <div className="cd-price" aria-live="polite">
             {quote ? (
               <>
-                <span>Price · {money(quote.units)} kWh</span>
-                <b>{quote.currency} {money(quote.amount)}</b>
+                <span>Price · incl. VAT</span>
+                <b key={quote.quoteId}>{quote.currency} {money(quote.amount)}</b>
               </>
             ) : (
-              <span className="cd-muted">{quoteError || (units ? 'Working out the price…' : 'Pick or type the units you want')}</span>
+              <span className={quoteError ? 'err' : ''}>{quoteError || (units ? 'Working out the price…' : 'Prices include VAT and levies')}</span>
             )}
           </div>
 
@@ -230,21 +240,28 @@ export function CustomerDesk() {
               <span className="fd-label">Recent tokens</span>
               {recent.slice(0, 3).map((r) => (
                 <button type="button" key={r.id} onClick={() => showRecent(r.id)} disabled={r.status !== 'SUCCEEDED'}>
-                  <span>{new Date(r.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · {r.units} kWh</span>
-                  <span className="mono">{r.status === 'SUCCEEDED' ? `•••• ${r.tokenLast4}` : r.status === 'FAILED' ? 'Not issued' : 'Being checked'}</span>
+                  <i><Icon name="bolt" size={13} /></i>
+                  <span>
+                    <b>{money(r.units)} kWh</b>
+                    <small>{new Date(r.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</small>
+                  </span>
+                  <em className="mono">{r.status === 'SUCCEEDED' ? `•••• ${r.tokenLast4}` : r.status === 'FAILED' ? 'Not issued' : 'Checking'}</em>
                 </button>
               ))}
             </div>
           )}
-          <button type="button" className="cd-link" onClick={signOut}>Sign out</button>
         </div>
       ) : (
-        <div className="cd-form">
+        <div className="cd-form" key="token">
           {vend.status === 'SUCCEEDED' && vend.tokens ? (
             <>
               <div className="fd-token cd-token">
-                <span className="fd-label">Your token · {vend.units} kWh</span>
+                <div className="cd-token-top">
+                  <span>{money(vend.units)} kWh</span>
+                  <span>Meter {groupMeter(vend.meterNo)}</span>
+                </div>
                 {vend.tokens.map((t) => <span key={t} className="fd-digits">{formatToken(t)}</span>)}
+                <small>{vend.currency} {money(vend.amount)} · Ref {vend.reference.slice(0, 8).toUpperCase()}</small>
               </div>
               {vend.adapterMode === 'mock' && <p className="cd-test"><Icon name="alert" size={13} /> Test token — practice only, it will not load on a real meter.</p>}
               <div className="cd-actions">
@@ -255,7 +272,7 @@ export function CustomerDesk() {
                   <Icon name={copied ? 'check' : 'copy'} size={16} /> {copied ? 'Copied' : 'Copy'}
                 </button>
               </div>
-                          </>
+            </>
           ) : vend.status === 'FAILED' ? (
             <div className="cd-state">
               <Icon name="alert" size={22} />
@@ -269,7 +286,7 @@ export function CustomerDesk() {
               <span>The vendor did not answer in time. Tronic staff will check it — please don’t generate another token for this meter yet. Reference {vend.reference.slice(0, 8).toUpperCase()}.</span>
             </div>
           )}
-          <button type="button" className="cd-link" onClick={another}>← Generate another token</button>
+          <button type="button" className="cd-link" onClick={another}><Icon name="back" size={14} /> Generate another token</button>
         </div>
       )}
     </div>
