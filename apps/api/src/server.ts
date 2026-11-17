@@ -13,7 +13,7 @@ const cfg = loadConfig();
 const log = Fastify({ logger: loggerOptions }).log;
 if (!cfg.DATABASE_URL) mkdirSync(cfg.PGLITE_DIR, { recursive: true });
 
-const db = await openDb({ databaseUrl: cfg.DATABASE_URL, pgliteDir: cfg.PGLITE_DIR });
+const db = await openDb({ databaseUrl: cfg.DATABASE_URL, databaseCaCert: cfg.DATABASE_CA_CERT, pgliteDir: cfg.PGLITE_DIR });
 const applied = await migrate(db);
 if (applied.length) log.info({ applied }, 'database migrations applied');
 await bootstrap(cfg, db, log);

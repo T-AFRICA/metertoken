@@ -17,10 +17,18 @@ export interface Db extends Queryable {
 const pgQuery = <T>(c: pg.Pool | pg.PoolClient, sql: string, params?: unknown[]) =>
   c.query(sql, params) as unknown as Promise<{ rows: T[] }>;
 
+/** With a CA certificate the connection is TLS-verified against it; an sslmode in the URL would override that, so it is dropped. */
+function poolConfig(databaseUrl: string, ca?: string): pg.PoolConfig {
+  if (!ca) return { connectionString: databaseUrl };
+  const url = new URL(databaseUrl);
+  url.searchParams.delete('sslmode');
+  return { connectionString: url.toString(), ssl: { ca, rejectUnauthorized: true } };
+}
+
 /** PostgreSQL via DATABASE_URL, or embedded PGlite (a directory, or "memory://" for tests). */
-export async function openDb(opts: { databaseUrl?: string; pgliteDir?: string }): Promise<Db> {
+export async function openDb(opts: { databaseUrl?: string; databaseCaCert?: string; pgliteDir?: string }): Promise<Db> {
   if (opts.databaseUrl) {
-    const pool = new pg.Pool({ connectionString: opts.databaseUrl });
+    const pool = new pg.Pool(poolConfig(opts.databaseUrl, opts.databaseCaCert));
     return {
       query: (sql, params) => pgQuery(pool, sql, params),
       exec: async (sql) => {

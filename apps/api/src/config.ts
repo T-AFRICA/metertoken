@@ -21,6 +21,11 @@ export const configSchema = z.object({
 
   /** PostgreSQL connection string. If unset, an embedded PGlite database in PGLITE_DIR is used (development only). */
   DATABASE_URL: z.string().optional(),
+  /** PEM certificate of the database's CA (Supabase: Database settings → SSL certificate). Turns on verified TLS. */
+  DATABASE_CA_CERT: z
+    .string()
+    .optional()
+    .transform((v) => v?.replace(/\\n/g, '\n')),
   PGLITE_DIR: z.string().default('.data/pglite'),
 
   /** 32 random bytes, base64. Encrypts STS tokens at rest. */
