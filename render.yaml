@@ -1,0 +1,48 @@
+# Render Blueprint for the portal API (apps/api). The web app runs on Vercel and proxies /api here
+# through its API_URL setting. Database: Supabase PostgreSQL (see apps/api/.env.example).
+# Values marked sync: false are asked for once in the Render dashboard and never stored in this repo.
+services:
+  - type: web
+    name: tronic-api
+    runtime: node
+    plan: free
+    # Closest Render region to Dar es Salaam; create the Supabase project in Frankfurt (eu-central-1) too.
+    region: frankfurt
+    buildCommand: npm ci
+    startCommand: npm run start -w @tronic/api
+    healthCheckPath: /api/health
+    autoDeploy: true
+    # Web-only changes do not redeploy the API.
+    buildFilter:
+      paths:
+        - apps/api/**
+        - packages/core/**
+        - package.json
+        - package-lock.json
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: CURRENCY
+        value: TZS
+      - key: STS_MODE
+        value: mock
+      - key: STS_LIVE_ENABLED
+        value: "false"
+      - key: SEED_SAMPLE_TARIFF
+        value: "false"
+      # Render generates a random base64 256-bit value once, at creation. Losing it makes stored tokens
+      # unreadable, so copy it to a password manager after the first deploy.
+      - key: TOKEN_ENC_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_CA_CERT
+        sync: false
+      - key: BOOTSTRAP_ADMIN_USERNAME
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
